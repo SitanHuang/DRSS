@@ -1,0 +1,18 @@
+classdef MassGroup < DRSS.core.obj.Mass
+    %MASS Abstract representation of a serial, 1D arrangement of Mass objs
+    %   and any of their derivatives (e.g., another MassGroup)
+
+    properties
+        massList DRSS.core.obj.Mass = {}
+    end
+
+    methods
+        function mg = appendChild(mg, child)
+            mg.massList = [mg.massList {child}];
+        end
+    end
+
+    methods
+        mg = recalcMassGroupProperties()
+    end
+end
