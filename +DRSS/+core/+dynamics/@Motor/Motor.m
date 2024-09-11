@@ -106,7 +106,7 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       Tend = this.t0 + this.motor_params.t_burn;
 
       % after burn time
-      if sysState.t >= Tend
+      if sysState.t >= Tend || sysState.t < this.t0
         return;
       end
 

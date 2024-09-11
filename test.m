@@ -34,7 +34,8 @@ tail = DRSS.core.obj.Mass("Tail") ...
 %% Define Dynamics
 
 gravityDynamics = DRSS.core.dynamics.Gravity() ...
-    .setEPS(800 * uc.ft_to_m); % set launch site elevation above mean sea level
+    .setEPS(800 * uc.ft_to_m) ... % set launch site elevation above mean sea level
+    .setTerminateOnGrounding(true);
 
 motorDynamics = DRSS.core.dynamics.Motor( ...
     fullfile(fileparts(mfilename('fullpath')), 'VADL/Motor Data/L1170.csv'), ...
@@ -55,18 +56,22 @@ sys = DRSS.core.sim.System("Powered Rail Ascent") ...
     .appendChild(motor) ...
     .setGeometryRecursive(rocketCylindricalGeometry) ...
     .subjecTo(gravityDynamics) ...
+    .subjecTo(rocketDynamics) ...
     .subjecTo(motorDynamics);
+
+solver = DRSS.solver.ODE45Solver(sys) ...
+    .solve();
 
 %% Debug & dev only:
 
-sys.momentOfInertia
+% sys.momentOfInertia
 
-ss = DRSS.core.sim.SystemState.createZeroState();
-ss.theta = deg2rad(5);
-ss.t = 0.5;
+% ss = DRSS.core.sim.SystemState.createZeroState();
+% ss.theta = deg2rad(5);
+% ss.t = 0.5;
 
 
-[gravityDynamics, sys]=gravityDynamics.step(sys, ss);
-[motorDynamics, sys]=motorDynamics.step(sys, ss);
-[gravityDynamics, sys, terminate, xdd, ydd, tdd, mdot] = gravityDynamics.resolve(sys, ss)
-[motorDynamics, sys, terminate, xdd, ydd, tdd, mdot] = motorDynamics.resolve(sys, ss)
+% [gravityDynamics, sys]=gravityDynamics.step(sys, ss);
+% [motorDynamics, sys]=motorDynamics.step(sys, ss);
+% [gravityDynamics, sys, terminate, xdd, ydd, tdd, mdot] = gravityDynamics.resolve(sys, ss)
+% [motorDynamics, sys, terminate, xdd, ydd, tdd, mdot] = motorDynamics.resolve(sys, ss)

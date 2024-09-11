@@ -12,14 +12,30 @@ classdef SystemState < handle
     thetad = []
     thetadd = []
 
-    % non-motion-based states (won't be integrated in solver)
+    % non-motion-based states (won't be integrated in solver and are figured
+    % out between dynamics.step and dynamics.resolve)
     m = []
+    I = []
 
     mdot = [] % positive = losing mass
 
     params = [] % extra system params
 
     t = []
+  end
+
+  methods
+    function s = toStateVec(this)
+      s = [
+        this.x;
+        this.y;
+        this.xd;
+        this.yd;
+        this.theta;
+        this.thetad;
+        1 % Continuation flag: if set to 0, simulation terminates
+      ];
+    end
   end
 
   methods(Static)
@@ -43,5 +59,17 @@ classdef SystemState < handle
 
       ss.t = 0;
     end
+
+    function ss = fromStateVector(t, vec)
+      ss = SystemState();
+      ss.x = vec(1);
+      ss.y = vec(2);
+      ss.xd = vec(3);
+      ss.yd = vec(4);
+      ss.theta = vec(5);
+      ss.thetad = vec(6);
+      ss.m = vec(7);
+      ss.t = t;
+  end
   end
 end

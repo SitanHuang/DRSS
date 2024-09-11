@@ -6,7 +6,7 @@ classdef System < DRSS.core.obj.MassGroup
     %   when passing as value in function calls) creates another reference to
     %   the same object.
     %
-    %   A System is slightly more accurate in calculating Moment of Inertia than
+    %   A System is much more accurate in calculating Moment of Inertia than
     %   MassGroup as it calculates using the individual sections rather than
     %   using the System's cgX and mass
 
