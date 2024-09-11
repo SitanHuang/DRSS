@@ -1,4 +1,4 @@
-classdef Dynamics < handle
+classdef RocketAerodynamics < DRSS.core.dynamics.Dynamics
   properties
   end
 

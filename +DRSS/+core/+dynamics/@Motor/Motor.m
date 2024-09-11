@@ -11,6 +11,11 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     motortype
     motor_params
   end
+
+  properties (Transient)
+    motor_state_temp
+  end
+
   methods
     function this = Motor(motor_csv_path, motortype, motor_database_func)
       this = this.motor_load(motor_csv_path, motortype, motor_database_func);
@@ -51,10 +56,17 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       this.motorMassGroup = massGroup;
     end
 
+    function [this, sys]=step(this, sys, ss)
+      [thrust, mdot] = this.motor_update_state(ss);
+
+      this.motor_state_temp = [thrust, mdot];
+    end
+
     function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
       terminate = false;
 
-      [thrust, mdot] = this.motor_update_state(ss);
+      thrust = this.motor_state_temp(1);
+      mdot = this.motor_state_temp(2);
 
       Th_n = mdot * ss.thetad * (sys.len - sys.cgX);
 
