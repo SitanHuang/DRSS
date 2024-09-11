@@ -57,6 +57,7 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     end
 
     function [this, sys]=step(this, sys, ss)
+      % calculates thrust & updates motor MassGroup:
       [thrust, mdot] = this.motor_update_state(ss);
 
       this.motor_state_temp = [thrust, mdot];

@@ -15,6 +15,9 @@ classdef Dynamics < handle
       %
       %  The System passed via the sys argument contains systemState up to but
       %  does not include the current step.
+      %
+      %  The mass in systemState will be recalculated after all step functions
+      %  are run, and before any resolve functions are run
 
       % Stub
     end
