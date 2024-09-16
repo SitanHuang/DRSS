@@ -1,8 +1,6 @@
 %% Misc Setup
 
-% "all" is needed; otherwise handle classes are not fully cleared and
-% simulation results may diverge
-clear all;
+clear;
 
 addpath(fullfile(fileparts(mfilename('fullpath')), 'VADL'))
 addpath(fullfile(fileparts(mfilename('fullpath')), 'VADL/Motor Data'))
@@ -96,6 +94,6 @@ solver = DRSS.solver.ODE45Solver(sys) ...
 % plot(resultantStates.t, resultantStates.y .* uc.m_to_ft)
 % plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
 % plot(resultantStates.t, rad2deg(resultantStates.theta))
-% plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
+plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
 % plot(resultantParameters.t, resultantParameters.I)
-plot(resultantParameters.t, resultantParameters.equivForceY)
+% plot(resultantParameters.t, resultantParameters.equivForceY)
