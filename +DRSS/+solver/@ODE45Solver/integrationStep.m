@@ -1,10 +1,10 @@
-function dsdt = integrationStep(this, t, states, system)
+function dsdt = integrationStep(this, t, states, system, resultantParameters)
   dynLen = length(system.dynamicsList);
 
   systemState = system.systemState.fromStateVec(t, states);
 
   if systemState.m == 0 || systemState.I == 0
-    recalcMass(system, systemState);
+    recalcInertialProperties(system, systemState);
   end
 
   % Prep Dynamics
@@ -21,7 +21,7 @@ function dsdt = integrationStep(this, t, states, system)
 
   % Recalculate mass groups
 
-  recalcMass(system, systemState);
+  recalcInertialProperties(system, systemState);
 
   % Execute Dynamics
 
@@ -44,7 +44,7 @@ function dsdt = integrationStep(this, t, states, system)
     mdot = mdot + mmdot;
 
     if this.debugFlag
-      fprintf('%30s, xdd=%.2f, ydd=%.2f, tdd=%.2f, mdot=%.2f\n', class(dyn), xxdd, yydd, ttdd, mmdot);
+      fprintf('RSLV: %30s, xdd=%.2f, ydd=%.2f, tdd=%.2f, mdot=%.2f\n', class(dyn), xxdd, yydd, ttdd, mmdot);
     end
   end
 
@@ -52,6 +52,32 @@ function dsdt = integrationStep(this, t, states, system)
   systemState.ydd = ydd;
   systemState.thetadd = tdd;
   systemState.mdot = mdot;
+
+  % Post adjustments
+
+  for i=1:dynLen
+    dyn = system.dynamicsList{i};
+
+    [~, ~, tterminate, xxdd, yydd, ttdd, mmdot] = ...
+      postAdjustment(dyn, system, systemState);
+
+    terminate = tterminate || terminate;
+    systemState.xdd = systemState.xdd + xxdd;
+    systemState.ydd = systemState.ydd + yydd;
+    systemState.thetadd = systemState.thetadd + ttdd;
+    systemState.mdot = systemState.mdot + mmdot;
+
+    if this.debugFlag
+      fprintf('POST: %30s, xdd=%.2f, ydd=%.2f, tdd=%.2f, mdot=%.2f\n', class(dyn), xxdd, yydd, ttdd, mmdot);
+    end
+  end
+
+  if this.captureResultantParameters
+    resultantParameters.t(end + 1) = t;
+    resultantParameters.m(end + 1) = systemState.m;
+    resultantParameters.mdot(end + 1) = systemState.mdot;
+    resultantParameters.I(end + 1) = systemState.I;
+  end
 
   if this.debugFlag
     fprintf(systemState.toOneLinerString());
@@ -62,7 +88,7 @@ function dsdt = integrationStep(this, t, states, system)
   systemState.terminate = terminate;
 end
 
-function recalcMass(sys, ss)
+function recalcInertialProperties(sys, ss)
   sys.recalcMassGroupProperties();
   ss.I = sys.momentOfInertia();
   ss.m = sys.m;

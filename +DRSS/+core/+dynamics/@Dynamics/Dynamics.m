@@ -35,6 +35,25 @@ classdef Dynamics < handle
       %   obj is allowed as as long as it tries to recognize something that
       %   happened in the past, rather than something that is happening in the
       %   current tick
+
+      terminate = false;
+      xdd = 0;
+      ydd = 0;
+      tdd = 0;
+      mdot = 0;
+    end
+
+    function [dyn, sys, terminate, xdd, ydd, tdd, mdot]=postAdjustment(dyn, sys, sysState)
+      % POSTADJUSTMENT Callback function to run after all resolve functions are
+      %   run. The sysState can be expected to be the current state after
+      %   resolution of dynamics (but may include changes made by other
+      %   postAdjustment callbacks).
+
+      terminate = false;
+      xdd = 0;
+      ydd = 0;
+      tdd = 0;
+      mdot = 0;
     end
   end
 end

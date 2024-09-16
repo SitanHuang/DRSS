@@ -6,7 +6,7 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     t0 = 0
   end
 
-  properties (Access=private)
+  properties
     motor_data
     motortype
     motor_params
@@ -63,7 +63,7 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       this.motor_state_temp = [thrust, mdot];
     end
 
-    function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
+    function [this, sys, terminate, xdd, ydd, tdd, mdot_actual]=resolve(this, sys, ss)
       terminate = false;
 
       xdd = 0;
@@ -71,7 +71,8 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       tdd = 0;
 
       thrust = this.motor_state_temp(1);
-      mdot = this.motor_state_temp(2);
+      mdot = -this.motor_state_temp(2);
+      mdot_actual = -mdot;
 
       if thrust == 0 || mdot == 0
         return;
@@ -125,11 +126,11 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       end
 
       % propellant mass (linearly decreasing)
-      mdot = this.motor_params.m_prop0 / this.motor_params.t_burn;
+      mdot = -this.motor_params.m_prop0 / this.motor_params.t_burn;
       m_prop = mdot * Telapsed;
 
       % total motor mass
-      m_motor = m_prop + this.motor_params.m0;
+      m_motor = this.motor_params.m0 + this.motor_params.m_prop0 + m_prop;
 
       this.motorMassGroup.overrideM(m_motor);
     end

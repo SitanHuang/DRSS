@@ -27,6 +27,19 @@ classdef SystemState < handle
   end
 
   methods
+    function total_mem = estimateMemorySize(obj)
+      props = properties(obj);
+
+      total_mem = 0;
+      for ii=1:length(props)
+          % Make shallow copy
+          curr_prop = obj.(props{ii});  %#ok<*NASGU>
+
+          s = whos('curr_prop');
+          total_mem = total_mem + s.bytes;
+      end
+    end
+
     function str = toOneLinerString(this)
       str = sprintf('t: %.2f, x: %.2f, xd: %.2f, xdd: %.2f, y: %.2f, yd: %.2f, ydd: %.2f, theta: %.2f rad, thetad: %.2f, thetadd: %.2f, m: %.2f, I: %.2f, mdot: %.2f, terminate: %s\n', ...
         this.t(end), ...
@@ -44,7 +57,7 @@ classdef SystemState < handle
         this.xd;
         this.yd;
         this.theta;
-        this.thetad;
+        this.thetad
       ];
     end
 
@@ -55,7 +68,7 @@ classdef SystemState < handle
         this.xdd;
         this.ydd;
         this.thetad;
-        this.thetadd;
+        this.thetadd
       ];
     end
 

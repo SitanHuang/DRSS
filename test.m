@@ -64,13 +64,16 @@ initialState = sys.systemState;
 initialState.y = 12 * 12 / 2 * uc.in_to_m;
 initialState.theta = deg2rad(0.001);
 
-solver = DRSS.solver.ODE45Solver(sys);
+solver = DRSS.solver.ODE45Solver(sys) ...
+    .setCaptureResultantParameters(true);
 
 % solver.debugFlag = true;
 
-resultantStates = solver.solve();
+[resultantStates, resultantParameters] = solver.solve();
 
 %% Debug & dev only:
 
 % plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t))
-plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
+% plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
+% plot(resultantStates.t, rad2deg(resultantStates.theta))
+plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
