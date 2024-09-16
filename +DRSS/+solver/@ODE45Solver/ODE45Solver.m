@@ -53,7 +53,7 @@ classdef ODE45Solver < DRSS.solver.Solver
     % PERFORMANCESUMMARY Flag to print performance summary after solving.
     %
     %   Default: true
-    performanceSummary = true
+    performanceSummary = false
 
     % DEBUGFLAG Flag to enable debug mode for verbose, step-by-step integration output.
     debugFlag = false

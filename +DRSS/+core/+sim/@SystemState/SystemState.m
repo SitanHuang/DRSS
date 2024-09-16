@@ -12,12 +12,16 @@ classdef SystemState < handle
     thetad = []
     thetadd = []
 
-    % non-motion-based states (won't be integrated in solver and are figured
+    % time variant parameters (won't be integrated in solver and are figured
     % out between dynamics.step and dynamics.resolve)
     m = []
     I = []
 
     mdot = [] % positive = losing mass
+
+    % derived, time variant parameters
+    equivForceX = [];
+    equivForceY = [];
 
     params = [] % extra system params
 

@@ -43,9 +43,19 @@ tail = DRSS.core.obj.Mass("Tail") ...
 % TODO: launchRailDynamics = ...
 % TODO: apogeeDynamics = ...
 
+% TODO: launchRailDynamics should perform the following for us:
+launchRailAngle = deg2rad(5);
+launchRailLength = 12 * 12 * uc.in_to_m;
+
+initialState = DRSS.core.sim.SystemState.createZeroState();
+initialState.y = launchRailLength .* cos(launchRailAngle) / 2; % Center of launch rail
+initialState.theta = launchRailAngle;
+
 gravityDynamics = DRSS.core.dynamics.Gravity() ...
   .setEPS(800 * uc.ft_to_m) ... % set launch site elevation above mean sea level
-  .setTerminateOnGrounding(true);
+  .setTerminateOnGrounding(true) ...
+  .setGroundingHeight(initialState.y) ...
+  .setGroundingTimeThreshold(1); % do not terminate mission even if rocket touches ground during the first second
 
 motorDynamics = DRSS.core.dynamics.Motor( ...
   fullfile(fileparts(mfilename('fullpath')), 'VADL/Motor Data/L1400.csv'), ...
@@ -66,17 +76,15 @@ sys = DRSS.core.sim.System("Ascent to Apogee") ...
   .appendChild(motor) ...
   .setInertialGeometryRecursive(rocketCylindricalInertialGeometry) ...
   .subjecTo(gravityDynamics) ...
-  .subjecTo(motorDynamics);
-
-initialState = sys.systemState;
-initialState.y = 12 * 12 / 2 * uc.in_to_m;
-initialState.theta = deg2rad(0.001);
+  .subjecTo(motorDynamics) ...
+  .setSystemState(initialState);
 
 % Hyperparameter optimization for ODE45Solver is extremely important; see the
 % ODE45Solver.m source code for more detailed information on how to optimize
 % both accuracy and computation time by carefully modyfing solver.ODEOptions
 solver = DRSS.solver.ODE45Solver(sys) ...
-  .setCaptureResultantParameters(true); % Whether to capture time variant params (i.e., m, mdot, I), which slows down the solver drastically
+  .setCaptureResultantParameters(true) ... % Whether to capture time variant params (i.e., m, mdot, I), which slows down the solver drastically
+  .setPrintPerformanceSummary(true);
 
 % solver.debugFlag = true;
 
@@ -85,7 +93,9 @@ solver = DRSS.solver.ODE45Solver(sys) ...
 %% WIP; Debug & dev only:
 
 % plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t))
+% plot(resultantStates.t, resultantStates.y .* uc.m_to_ft)
 % plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
 % plot(resultantStates.t, rad2deg(resultantStates.theta))
 % plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
-plot(resultantParameters.t, resultantParameters.I)
+% plot(resultantParameters.t, resultantParameters.I)
+plot(resultantParameters.t, resultantParameters.equivForceY)

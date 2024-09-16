@@ -31,6 +31,10 @@ classdef System < DRSS.core.obj.MassGroup
         % function obj=overrideSideArea(obj, sideArea) %#ok<INUSD>
         %     error("Overrides are not allowed for a System obj")
         % end
+
+        function this=setSystemState(this, val)
+            this.systemState = val;
+        end
     end
 
     methods
