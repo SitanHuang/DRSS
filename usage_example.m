@@ -1,8 +1,8 @@
 %% Misc Setup
 
-% "all" is needed otherwise handle classes are not fully cleared and
+% "all" is needed; otherwise handle classes are not fully cleared and
 % simulation results may diverge
-clear all; clc;
+clear all;
 
 addpath(fullfile(fileparts(mfilename('fullpath')), 'VADL'))
 addpath(fullfile(fileparts(mfilename('fullpath')), 'VADL/Motor Data'))
@@ -64,8 +64,11 @@ initialState = sys.systemState;
 initialState.y = 12 * 12 / 2 * uc.in_to_m;
 initialState.theta = deg2rad(0.001);
 
+% Hyperparameter optimization for ODE45Solver is extremely important; see the
+% ODE45Solver.m source code for more detailed information on how to optimize
+% both accuracy and computation time by carefully modyfing solver.ODEOptions
 solver = DRSS.solver.ODE45Solver(sys) ...
-    .setCaptureResultantParameters(true);
+    .setCaptureResultantParameters(true); % Whether to capture non-integrated states (i.e., m, mdot, I), which slows down the solver drastically
 
 % solver.debugFlag = true;
 
@@ -76,4 +79,5 @@ solver = DRSS.solver.ODE45Solver(sys) ...
 % plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t))
 % plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
 % plot(resultantStates.t, rad2deg(resultantStates.theta))
-plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
+% plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
+plot(resultantParameters.t, resultantParameters.I)

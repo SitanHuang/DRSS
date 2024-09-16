@@ -3,10 +3,31 @@ classdef ODE45Solver < DRSS.solver.Solver
 
   % ODE45 Configs
   properties
-    timeSpan = [0, 300] % Simulation time span [t_start, t_end]
-    ODEOptions = odeset('InitialStep', 0.01, 'MaxStep', 1) % Options for MATLAB's ODE 45 solver
+    % Simulation time span [t_start, t_end]
+    timeSpan = [0, 300]
 
-    captureResultantParameters = false % Whether to capture non-integrated states (i.e., mass and inertia), which will slow down the solver drastically
+    % Options for MATLAB's ODE 45 solver
+    %   From experimentation, RelTol is a MUCH more efficient option than
+    %   MaxStep for increasing accuracy without incuring huge cost rise on
+    %   computation. 1e-3 is sufficient for running batch simulations (i.e.,
+    %   iterative rocket design optimization) while 1e-6 to 1e-8 is excellent
+    %   for finalizing reports. Do not go to 1e-2; for example, motor burn is
+    %   estimated to complete at 1.75s for a 2.0s burn time motor.
+    %
+    %   InitialStep needs to be small so to not entirely skip over the motor
+    %   burn stage (MATLAB will choose dt=4s if this is not set); if the system
+    %   isn't modeled from launch rail, the first few seconds of simulation are
+    %   usually extremely sensitive. Setting InitialStep to a small amount saves
+    %   computation as MATLAB doesn't need to iterate to decrease it further
+    %
+    %
+    ODEOptions = odeset( ...
+      'InitialStep', 0.001, ...
+      'RelTol', 1e-3 ...
+    )
+
+    % Whether to capture non-integrated states (i.e., m, mdot, I), which slows down the solver drastically
+    captureResultantParameters = false
 
     performanceSummary = true
     debugFlag = false
@@ -23,6 +44,9 @@ classdef ODE45Solver < DRSS.solver.Solver
 
     function this=setCaptureResultantParameters(this, val)
       this.captureResultantParameters = val;
+    end
+    function this=setPrintPerformanceSummary(this, val)
+      this.performanceSummary = val;
     end
 
     function this=configureODE(this, varargin)
