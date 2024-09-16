@@ -27,13 +27,17 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
       tdd = 0;
       mdot = 0;
 
+      if abs(ss.y) < 1e-3 % tolerance for some finite penetration of ground
+        return;
+      end
+
       if ss.y < 0
         % Rocket below ground, it's OVER
         terminate = this.terminateOnGrounding;
         return;
       end
 
-      ydd = this.g0 * (this.RE / (this.RE + this.eps + ss.y))^2;
+      ydd = -this.g0 * (this.RE / (this.RE + this.eps + ss.y))^2;
     end
   end
 end

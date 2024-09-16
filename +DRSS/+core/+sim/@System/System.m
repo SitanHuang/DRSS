@@ -13,7 +13,7 @@ classdef System < DRSS.core.obj.MassGroup
     properties
         dynamicsList = []
 
-        systemState = DRSS.core.sim.SystemState()
+        systemState = DRSS.core.sim.SystemState.createZeroState()
 
         IAarray = {}
     end

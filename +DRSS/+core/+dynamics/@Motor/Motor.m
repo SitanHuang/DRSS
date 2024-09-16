@@ -66,8 +66,16 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
       terminate = false;
 
+      xdd = 0;
+      ydd = 0;
+      tdd = 0;
+
       thrust = this.motor_state_temp(1);
       mdot = this.motor_state_temp(2);
+
+      if thrust == 0 || mdot == 0
+        return;
+      end
 
       Th_n = mdot * ss.thetad * (sys.len - sys.cgX);
 
