@@ -26,16 +26,16 @@ classdef MassGroup < DRSS.core.obj.Mass
             obj.sideArea = sideArea;
         end
 
-        function this=setGeometryRecursive(this, geometry)
-            this.setGeometry(geometry);
+        function this=setInertialGeometryRecursive(this, geometry)
+            this.setInertialGeometry(geometry);
 
             for i = 1:length(this.massList)
                 child = this.massList{i};
 
                 if isa(geometry, "DRSS.core.obj.MassGroup")
-                    child.setGeometryRecursive(geometry);
+                    child.setInertialGeometryRecursive(geometry);
                 else
-                    child.setGeometry(geometry);
+                    child.setInertialGeometry(geometry);
                 end
             end
         end

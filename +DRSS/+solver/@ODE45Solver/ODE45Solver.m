@@ -1,12 +1,28 @@
 classdef ODE45Solver < DRSS.solver.Solver
   % ODE45SOLVER A Runge-Kutta solver for a given System object.
+  %
+  %   Example:
+  %       % Create an instance of the solver
+  %       solver = DRSS.solver.ODE45Solver();
+  %
+  %       % Configure the solver
+  %       solver
+  %         .setTimeSpan([0, 100]);
+  %         .configureODE('RelTol', 1e-6, 'AbsTol', 1e-8);
+  %         .setCaptureResultantParameters(true);
+  %
+  %       % Run the solver
+  %       [states, timeVariantParams] = solver.solve();
+  %
+  %   See also: odeset, ode45, DRSS.core.sim.System
 
-  % ODE45 Configs
+  % Configs
   properties
-    % Simulation time span [t_start, t_end]
+    % Simulation time span [t_start, t_end], seconds
     timeSpan = [0, 300]
 
-    % Options for MATLAB's ODE 45 solver
+    % ODEOPTIONS Options for MATLAB's ODE 45 solver
+    %
     %   From experimentation, RelTol is a MUCH more efficient option than
     %   MaxStep for increasing accuracy without incuring huge cost rise on
     %   computation. 1e-3 is sufficient for running batch simulations (i.e.,
@@ -20,16 +36,26 @@ classdef ODE45Solver < DRSS.solver.Solver
     %   usually extremely sensitive. Setting InitialStep to a small amount saves
     %   computation as MATLAB doesn't need to iterate to decrease it further
     %
-    %
     ODEOptions = odeset( ...
       'InitialStep', 0.001, ...
       'RelTol', 1e-3 ...
     )
 
-    % Whether to capture non-integrated states (i.e., m, mdot, I), which slows down the solver drastically
+    % CAPTURERESULTANTPARAMETERS Flag to capture non-integrated, time variant parameters.
+    %
+    %   When set to true, the solver captures additional parameters during the
+    %   simulation, such as mass, mass flow rate, and moment of inertia. Enabling
+    %   this option may slow down the solver due to increased data storage.
+    %
+    %   Default: false
     captureResultantParameters = false
 
+    % PERFORMANCESUMMARY Flag to print performance summary after solving.
+    %
+    %   Default: true
     performanceSummary = true
+
+    % DEBUGFLAG Flag to enable debug mode for verbose, step-by-step integration output.
     debugFlag = false
   end
 
@@ -57,6 +83,23 @@ classdef ODE45Solver < DRSS.solver.Solver
   % Solver Methods
   methods
     function [resultantStates, resultantParameters] = solve(this)
+      % SOLVE Run the ODE solver and return the resultant states and parameters.
+      %
+      %   [states, timeVariantParams] = solve(this) runs the ODE solver over the specified
+      %   time span and returns the states and any captured parameters.
+      %
+      %   Outputs:
+      %       resultantStates - An object of type DRSS.core.sim.SystemState
+      %                         containing the state variables over time.
+      %       resultantParameters - An object of type DRSS.core.sim.SystemState
+      %                             containing the captured, time-variant
+      %                             parameters over time. Note that this will
+      %                             only be valid if solver.captureResultantParameters
+      %                             is set to true.
+      %
+      %   Note:
+      %       The solver uses the systemState associated with the system object
+      %       (this.sys) as the initial condition.
       tic;
 
       resultantParameters = DRSS.core.sim.SystemState();
@@ -92,7 +135,47 @@ classdef ODE45Solver < DRSS.solver.Solver
 
   % Quasi-private methods (direct usage discouraged)
   methods
+    % INTEGRATIONSTEP Compute the derivative of the state vector at time t.
+    %
+    %   dsdt = integrationStep(this, t, y, s, resultantParameters) computes
+    %   the time derivative of the state vector y at time t using the system
+    %   dynamics defined in the system object s.
+    %
+    %   Inputs:
+    %       t - Current time.
+    %       y - Current state vector.
+    %       s - System object.
+    %       resultantParameters - SystemState to store captured timeVariant parameters.
+    %
+    %   Output:
+    %       dsdt - Time derivative of the state vector.
+    %
+    %   Note:
+    %       This method is called internally by the ODE solver. It is encouraged
+    %       to not be called directly by users.
     dsdt = integrationStep(this, t, y, s, resultantParameters);
+
+    % EVENTSSTEP Event function for the ODE solver.
+    %
+    %   [value, isterminal, direction] = eventsStep(this, t, y, s) defines
+    %   the events that the ODE solver should monitor during integration.
+    %   Specifically, this event halts integration when systemState.terminate is
+    %   set to true
+    %
+    %   Inputs:
+    %       t - Current time.
+    %       y - Current state vector.
+    %       s - System object.
+    %
+    %   Outputs:
+    %       value - Value(s) of the event function(s) (vector).
+    %       isterminal - Boolean flag(s) indicating if integration should
+    %                    terminate when event is detected (vector).
+    %       direction - Direction(s) of zero-crossing to detect (+1, -1, 0).
+    %
+    %   Note:
+    %       This method is called internally by the ODE solver. It is encouraged
+    %       to not be called directly by users.
     [value, isterminal, direction] = eventsStep(this, t, y, s);
   end
 
@@ -125,6 +208,8 @@ classdef ODE45Solver < DRSS.solver.Solver
     end
 
     function printPerformanceSummary(this, simulationTime, times, states, resultantParameters)
+      % PRINTPERFORMANCESUMMARY Print a summary of the solver's performance.
+
       minTimeStep = min(diff(times));
       maxTimeStep = max(diff(times));
       framesTotal = length(times);

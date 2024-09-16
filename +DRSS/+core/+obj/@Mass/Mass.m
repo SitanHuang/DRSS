@@ -40,7 +40,7 @@ classdef Mass < DRSS.core.obj.NamedObj
         function obj=setSideArea(obj, sideArea)
             obj.sideArea = sideArea;
         end
-        function this=setGeometry(this, geometry)
+        function this=setInertialGeometry(this, geometry)
             if ~this.lockedGeometry
                 this.momentOfInertiaGeometry = geometry;
             end
