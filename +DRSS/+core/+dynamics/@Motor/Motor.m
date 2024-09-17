@@ -88,6 +88,21 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       xdd = (Th_n/sys.m) * cos(ss.theta) + (Th_t/sys.m) * sin(ss.theta);
       ydd = ((-Th_n)/sys.m) * sin(ss.theta) + (Th_t/sys.m) * cos(ss.theta);
       tdd = 0;
+
+      gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);
+      grounding = DRSS.core.dynamics.Gravity.getCurrentGroundingFromSystemState(ss);
+
+      if ss.t < 0.1
+        fprintf('t=%d, %.6f, %d\n', ss.t, gravAcc, grounding);
+      end
+
+      if grounding && -ydd <= gravAcc
+        % rocket on ground and thrust hasn't exceeded gravitational pull;
+        % there shouldn't be any movement as thrust simply substitutes a
+        % portion of the normal force
+        ydd = 0;
+        xdd = 0;
+      end
     end
   end
 

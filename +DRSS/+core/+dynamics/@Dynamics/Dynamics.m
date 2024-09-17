@@ -28,13 +28,12 @@ classdef Dynamics < handle
       %   particular timestep - specifically, components caused by this Dynamics
       %   object;
       %
-      %   IMPORTANT!!!: The outputs must ONLY be produced using information in
-      %   the current sysState. Modification of data in sys obj is allowed
-      %   only if the modification process is not order dependent & reproducible
-      %   via the sysState obj. Setting a marker in the sys obj or this dynamic
-      %   obj is allowed as as long as it tries to recognize something that
-      %   happened in the past, rather than something that is happening in the
-      %   current tick
+      %   IMPORTANT!!!: The outputs must consider that the time in sysState may
+      %   be non-monotonic. Modification of data in sys obj is allowed only if
+      %   the modification process is not order dependent & reproducible via the
+      %   sysState obj. Setting a marker in the sys obj or this dynamic obj is
+      %   allowed as as long as it tries to recognize something that happened in
+      %   the past.
 
       terminate = false;
       xdd = 0;

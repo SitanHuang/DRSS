@@ -110,6 +110,11 @@ classdef ODE45Solver < DRSS.solver.Solver
       this.ss.I = this.sys.momentOfInertia();
       this.ss.m = this.sys.m;
 
+      for i=1:length(this.sys.dynamicsList)
+        dyn = this.sys.dynamicsList{i};
+        dyn.resetTransientData();
+      end
+
       [times, states] = ode45( ...
         @(t, y) this.integrationStep(t, y, this.sys, resultantParameters), ...
         this.timeSpan, ...

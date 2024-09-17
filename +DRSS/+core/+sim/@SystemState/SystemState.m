@@ -17,13 +17,13 @@ classdef SystemState < handle
     m = []
     I = []
 
-    mdot = [] % positive = losing mass
+    mdot = []
 
     % derived, time variant parameters
     equivForceX = [];
     equivForceY = [];
 
-    params = [] % extra system params
+    params % extra system params
 
     t = []
 
@@ -31,6 +31,10 @@ classdef SystemState < handle
   end
 
   methods
+    function this = SystemState()
+      this.params = containers.Map();
+    end
+
     function total_mem = estimateMemorySize(obj)
       props = properties(obj);
 

@@ -11,11 +11,6 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   for i=1:dynLen
     dyn = system.dynamicsList{i};
-    dyn.resetTransientData();
-  end
-
-  for i=1:dynLen
-    dyn = system.dynamicsList{i};
     dyn.step(system, systemState);
   end
 

@@ -8,8 +8,21 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
     % RE Earth radius in meters.
     RE = 6.37e6
 
-    % G0 Gravitational acceleration at mean sea level in meters per second squared.
+    % G0 Gravitational acceleration at mean sea level in m/s^2.
     g0 = 9.80665
+  end
+
+  % Static properties emulated as static getter methods
+  methods (Static)
+    % Key in the SystemState.params Map obj to access the current gravitational acceleration in m/s^2
+    function key = SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC
+      key = 'Gravity.CurrentGravAcc';
+    end
+
+    % Key in the SystemState.params Map obj to denote grounding
+    function key = SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING
+      key = 'Gravity.CurrentGrounding';
+    end
   end
 
   properties
@@ -29,8 +42,8 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
     %   Allows for a specified tolerance in meters below which the system is
     %   considered grounded but does not yet enact any forces.
     %
-    %   Default: 0 meters
-    groundingThreshold = 0
+    %   Default: 1e-6 meters
+    groundingThreshold = 1e-6
 
     % GROUNDINGTIMETHRESHOLD Time threshold in seconds for grounding consideration.
     %
@@ -72,6 +85,13 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
       this.groundingTimeThreshold = val;
     end
 
+    function [this, sys]=step(this, sys, ss)
+      gravAcc = -this.g0 * (this.RE / (this.RE + this.eps + ss.y))^2;
+      ss.params(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC) = gravAcc;
+
+      grounding = abs(ss.y - this.groundingHeight) <= this.groundingThreshold;
+      ss.params(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING) = grounding;
+    end
 
     function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
       terminate = false;
@@ -96,6 +116,24 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
       end
 
       ydd = -this.g0 * (this.RE / (this.RE + this.eps + ss.y))^2;
+    end
+  end
+
+  methods (Static)
+    function gravAcc = getCurrentGravAccFromSystemState(ss)
+      gravAcc = nan;
+
+      if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC)
+        gravAcc = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC);
+      end
+    end
+
+    function grounding = getCurrentGroundingFromSystemState(ss)
+      grounding = nan;
+
+      if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING)
+        grounding = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING);
+      end
     end
   end
 end
