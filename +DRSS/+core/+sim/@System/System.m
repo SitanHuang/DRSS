@@ -16,6 +16,13 @@ classdef System < DRSS.core.obj.MassGroup
     systemState;
 
     IAarray = {}
+
+    % Launch site elevation above mean sea level [m]
+    launchSiteElevation = 0
+    % launch site air temperature [C]
+    launchSiteTemp = 26.67;
+    % launch site pressure [Pa]
+    launchSitePressure = 101592;
   end
 
   methods
@@ -38,13 +45,23 @@ classdef System < DRSS.core.obj.MassGroup
     %   error("Overrides are not allowed for a System obj")
     % end
 
+    function this=setLaunchSiteElevation(this, val)
+      this.launchSiteElevation = val;
+    end
+    function this=setLaunchSiteTemp(this, val)
+      this.launchSiteTemp = val;
+    end
+    function this=setLaunchSitePressure(this, val)
+      this.launchSitePressure = val;
+    end
+
     function this=setSystemState(this, val)
       this.systemState = val;
     end
   end
 
   methods
-    function this = subjecTo(this, dynamics)
+    function this = subjectTo(this, dynamics)
       this.dynamicsList = [this.dynamicsList {dynamics}];
     end
 

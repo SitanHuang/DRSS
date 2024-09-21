@@ -9,14 +9,20 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   % Prep Dynamics
 
+  requestMassRecalc = false;
+
   for i=1:dynLen
     dyn = system.dynamicsList{i};
-    dyn.step(system, systemState);
+    [~, ~, massChanged] = dyn.step(system, systemState);
+
+    requestMassRecalc = requestMassRecalc | massChanged;
   end
 
   % Recalculate mass groups
 
-  recalcInertialProperties(system, systemState);
+  if requestMassRecalc
+    recalcInertialProperties(system, systemState);
+  end
 
   % Execute Dynamics
 

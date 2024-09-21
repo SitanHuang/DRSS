@@ -3,6 +3,14 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     % the MassGroup representing the motor, bound and controlled by Motor dynamics
     motorMassGroup
 
+    % % only output force when thrust is known to completely replace the
+    % % normal force; reduces jitter but may have performance implications;
+    % % on the other hand, jitter may increase the number of frames ODE45
+    % % needs to calculate
+    % %
+    % % Default: true
+    % adjustForGrounding = true
+
     t0 = 0
   end
 
@@ -21,6 +29,10 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       this = this.motor_load(motor_csv_path, motortype, motor_database_func);
 
       this.motortype = motortype;
+    end
+
+    function this = setAdjustForGrounding(this, val)
+        this.adjustForGrounding = val;
     end
 
     function this = setIgnitionTimestamp(this, t0)
@@ -56,9 +68,11 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       this.motorMassGroup = massGroup;
     end
 
-    function [this, sys]=step(this, sys, ss)
+    function [this, sys, massChanged]=step(this, sys, ss)
       % calculates thrust & updates motor MassGroup:
       [thrust, mdot] = this.motor_update_state(ss);
+
+      massChanged = mdot ~= 0;
 
       this.motor_state_temp = [thrust, mdot];
     end
@@ -85,24 +99,22 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       Th_t = mdot * sqrt((thrust/mdot)^2 - ((sys.len - sys.cgX) * ss.thetad)^2);
       Th_t = real(Th_t);
 
-      xdd = (Th_n/sys.m) * cos(ss.theta) + (Th_t/sys.m) * sin(ss.theta);
-      ydd = ((-Th_n)/sys.m) * sin(ss.theta) + (Th_t/sys.m) * cos(ss.theta);
+      xdd = (Th_n/ss.m) * cos(ss.theta) + (Th_t/ss.m) * sin(ss.theta);
+      ydd = ((-Th_n)/ss.m) * sin(ss.theta) + (Th_t/ss.m) * cos(ss.theta);
       tdd = 0;
 
-      gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);
-      grounding = DRSS.core.dynamics.Gravity.getCurrentGroundingFromSystemState(ss);
+      % if this.adjustForGrounding
+      %   gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);
+      %   grounding = DRSS.core.dynamics.Gravity.getCurrentGroundingFromSystemState(ss);
 
-      if ss.t < 0.1
-        fprintf('t=%d, %.6f, %d\n', ss.t, gravAcc, grounding);
-      end
-
-      if grounding && -ydd <= gravAcc
-        % rocket on ground and thrust hasn't exceeded gravitational pull;
-        % there shouldn't be any movement as thrust simply substitutes a
-        % portion of the normal force
-        ydd = 0;
-        xdd = 0;
-      end
+      %   if grounding && -ydd <= gravAcc
+      %     % rocket on ground and thrust hasn't exceeded gravitational pull;
+      %     % there shouldn't be any movement as thrust simply substitutes a
+      %     % portion of the normal force
+      %     ydd = 0;
+      %     xdd = 0;
+      %   end
+      % end
     end
   end
 

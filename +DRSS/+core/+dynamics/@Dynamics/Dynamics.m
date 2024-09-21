@@ -3,12 +3,12 @@ classdef Dynamics < handle
   end
 
   methods
-    function this = resetTransientData(this)
+    function [this, sys, sysState0] = resetTransientData(this, sys, sysState0)
       % RESETTRANSIENTDATA The callback function to run between simulations
       %   since the Dynamics obj is a handle and may be reused in different
       %   System objects or the same System object simulated multiple times
     end
-    function [dyn, sys]=step(dyn, sys, sysState)
+    function [dyn, sys, massChanged]=step(dyn, sys, sysState)
       % STEP callback on every integration step run once for each Dynamics in
       %   a system per step (useful for prepping values used in other funcs)
       %   and before resolve functions are run
@@ -20,6 +20,7 @@ classdef Dynamics < handle
       %  are run, and before any resolve functions are run
 
       % Stub
+      massChanged = false;
     end
 
     function [dyn, sys, terminate, xdd, ydd, tdd, mdot]=resolve(dyn, sys, sysState)

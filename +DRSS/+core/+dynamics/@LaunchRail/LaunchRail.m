@@ -4,7 +4,7 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
   end
 
   methods
-    function [dyn, sys]=step(dyn, sys, sysState)
+    function [dyn, sys, massChanged]=step(dyn, sys, sysState)
       % Stub
     end
 

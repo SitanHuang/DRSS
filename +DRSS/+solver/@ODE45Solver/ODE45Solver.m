@@ -112,7 +112,7 @@ classdef ODE45Solver < DRSS.solver.Solver
 
       for i=1:length(this.sys.dynamicsList)
         dyn = this.sys.dynamicsList{i};
-        dyn.resetTransientData();
+        dyn.resetTransientData(this.sys, this.ss);
       end
 
       [times, states] = ode45( ...

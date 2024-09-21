@@ -1,37 +1,36 @@
 classdef RocketAerodynamics < DRSS.core.dynamics.Dynamics
   properties
+    aerodynamicProfile
+  end
+
+  % For internal use:
+  properties (Access=protected, Transient)
+    A
+    L_body
+    A_body
+    A_nose
+    A_tail
+    A_planform
   end
 
   methods
-    function this = resetTransientData(this)
-      % RESETTRANSIENTDATA The callback function to run between simulations
-      %   since the Dynamics obj is a handle and may be reused in different
-      %   System objects or the same System object simulated multiple times
-    end
-    function [dyn, sys]=step(dyn, sys, sysState)
-      % STEP callback on every integration step run once for each Dynamics in
-      %   a system per step (useful for prepping values used in other funcs)
-      %   and before resolve functions are run
-      %
-      %  The System passed via the sys argument contains systemState up to but
-      %  does not include the current step.
-
-      % Stub
+    function this = RocketAerodynamics(varargin)
+      this = this.initialize(varargin);
     end
 
-    function [dyn, sys, terminate, xdd, ydd, tdd, mdot]=resolve(dyn, sys, sysState)
-      % RESOLVE The callback function to return some components of the forces
-      %   and moments contributing to the total forces and moments at a
-      %   particular timestep - specifically, components caused by this Dynamics
-      %   object;
-      %
-      %   IMPORTANT!!!: The outputs must ONLY be produced using information in
-      %   the current sysState. Modification of data in sys obj is allowed
-      %   only if the modification process is not order dependent & reproducible
-      %   via the sysState obj. Setting a marker in the sys obj or this dynamic
-      %   obj is allowed as as long as it tries to recognize something that
-      %   happened in the past, rather than something that is happening in the
-      %   current tick
-    end
+    [this, sys, sysState0] = resetTransientData(this, sys, sysState0);
+
+    [this, sys, terminate, xdd, ydd, tdd, mdot] = resolve(this, sys, sysState);
+  end
+
+  methods (Access=private)
+    this = initialize(this, inputs);
+  end
+
+  methods (Access=public, Static)
+    % Legacy Functions:
+    w = wind_calc(wr, zr, z, xi);
+    [rho, T, p, mu] = atmosphere(z, T0, p0, R, B, g0);
+    [CA, CN, CD, CL, CP] = aerodynamics(Re, v, alpha, cm, D, L, L_nose, L_body, A_planform, l_tail, L_tail_c, L_tail_f, D_tail, A_fin, n_fins, A_fin_e, l_fin, t_fin, s, cr, ct, M_inf, A, CD_override, CDr);
   end
 end
