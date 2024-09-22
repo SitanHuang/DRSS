@@ -79,10 +79,10 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
     end
 
     function [this, sys, massChanged]=step(this, sys, ss)
-      gravAcc = -this.g0 * (this.RE / (this.RE + sys.launchSiteElevation + ss.y))^2;
+      % gravAcc = -this.g0 * (this.RE / (this.RE + sys.launchSiteElevation + ss.y))^2;
       % ss.params(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC) = gravAcc;
 
-      grounding = abs(ss.y - this.groundingHeight) <= this.groundingThreshold;
+      % grounding = abs(ss.y - this.groundingHeight) <= this.groundingThreshold;
       % ss.params(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING) = grounding;
 
       massChanged = false;
@@ -110,25 +110,39 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
         return;
       end
 
-      ydd = -this.g0 * (this.RE / (this.RE + sys.launchSiteElevation + ss.y))^2;
+      g = this.g0 * (this.RE / (this.RE + sys.launchSiteElevation + ss.y))^2;
+
+
+      if ss.forceConstantTheta
+        ydd = -g * (sin(ss.theta)^2 - 1);
+        xdd = g * cos(ss.theta) * sin(ss.theta);
+      else
+        ydd = -g;
+      end
     end
   end
 
-  % methods (Static)
-  %   function gravAcc = getCurrentGravAccFromSystemState(ss)
-  %     gravAcc = nan;
+  methods (Static)
+    function g = calcGravity(sys, ss)
+      g0 = DRSS.core.dynamics.Gravity.g0;
+      RE = DRSS.core.dynamics.Gravity.RE;
 
-  %     if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC)
-  %       gravAcc = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC);
-  %     end
-  %   end
+      g = -g0 * (RE / (RE + sys.launchSiteElevation + ss.y))^2;
+    end
+    % function gravAcc = getCurrentGravAccFromSystemState(ss)
+    %   gravAcc = nan;
 
-  %   function grounding = getCurrentGroundingFromSystemState(ss)
-  %     grounding = nan;
+    %   if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC)
+    %     gravAcc = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC);
+    %   end
+    % end
 
-  %     if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING)
-  %       grounding = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING);
-  %     end
-  %   end
-  % end
+    % function grounding = getCurrentGroundingFromSystemState(ss)
+    %   grounding = nan;
+
+    %   if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING)
+    %     grounding = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING);
+    %   end
+    % end
+  end
 end

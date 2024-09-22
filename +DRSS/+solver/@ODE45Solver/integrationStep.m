@@ -20,7 +20,7 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   % Recalculate mass groups
 
-  if requestMassRecalc
+  if requestMassRecalc || t < systemState.prevTime
     recalcInertialProperties(system, systemState);
   end
 
@@ -86,7 +86,14 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
     fprintf(systemState.toOneLinerString());
   end
 
+  if systemState.forceConstantTheta
+    systemState.thetad = 0;
+    systemState.thetadd = 0;
+  end
+
   dsdt = systemState.toStateVecDeriv();
+
+  systemState.prevTime = systemState.t;
 
   systemState.terminate = terminate;
 end

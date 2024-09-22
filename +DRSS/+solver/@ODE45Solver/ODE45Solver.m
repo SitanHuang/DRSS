@@ -36,6 +36,11 @@ classdef ODE45Solver < DRSS.solver.Solver
     %   usually extremely sensitive. Setting InitialStep to a small amount saves
     %   computation as MATLAB doesn't need to iterate to decrease it further
     %
+    %   By using overrideODEFunc and setting the solver method to other than
+    %   ode45 (default), RelTol can be increased without performance / memory
+    %   costs. Anecdotally, using ode113 at 1e-9 tolerance is great for both
+    %   performance & accuracy.
+    %
     ODEOptions = odeset( ...
       'InitialStep', 0.001, ...
       'RelTol', 1e-3 ...
@@ -57,6 +62,9 @@ classdef ODE45Solver < DRSS.solver.Solver
 
     % DEBUGFLAG Flag to enable debug mode for verbose, step-by-step integration output.
     debugFlag = false
+
+    % Use ODE
+    odeFunc=@ode45
   end
 
   % Abstraction Methods
@@ -77,6 +85,10 @@ classdef ODE45Solver < DRSS.solver.Solver
 
     function this=configureODE(this, varargin)
       this.ODEOptions = odeset(this.ODEOptions, varargin{:});
+    end
+
+    function this=overrideODEFunc(this, val)
+      this.odeFunc = val;
     end
   end
 
@@ -115,7 +127,7 @@ classdef ODE45Solver < DRSS.solver.Solver
         dyn.resetTransientData(this.sys, this.ss);
       end
 
-      [times, states] = ode45( ...
+      [times, states] = this.odeFunc( ...
         @(t, y) this.integrationStep(t, y, this.sys, resultantParameters), ...
         this.timeSpan, ...
         this.ss.toStateVec(), ...

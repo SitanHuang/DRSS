@@ -21,3 +21,5 @@ unitConv.J_to_ftlbf = 0.737562;
 unitConv.G_to_fps2 = 32.174;
 unitConv.atm_to_Pa = 101325;
 unitConv.Pa_to_atm = 1/unitConv.atm_to_Pa;
+
+unitConv.mps_to_fps = 3.28084;

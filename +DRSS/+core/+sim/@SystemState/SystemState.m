@@ -27,6 +27,9 @@ classdef SystemState < handle
 
     t = []
 
+    prevTime = [] % for internal tracking
+    forceConstantTheta = [] % internal use, tells solver to force thetad=thetadd=0
+
     terminate = false % set during runtime to true terminates integration
   end
 

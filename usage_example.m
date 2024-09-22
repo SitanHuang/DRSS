@@ -43,17 +43,8 @@ tail = DRSS.core.obj.Mass("Tail") ...
 % TODO: apogeeDynamics = ...
 % TODO: drogueDynamics = ...
 
-% TODO: launchRailDynamics should perform the following for us:
-launchRailAngle = deg2rad(5);
-launchRailLength = 12 * 12 * uc.in_to_m;
-
-initialState = DRSS.core.sim.SystemState.createZeroState();
-initialState.y = launchRailLength .* cos(launchRailAngle) / 2; % Center of launch rail
-initialState.theta = launchRailAngle;
-
 gravityDynamics = DRSS.core.dynamics.Gravity() ...
   .setTerminateOnGrounding(true) ...
-  .setGroundingHeight(initialState.y) ...
   .setGroundingTimeThreshold(1); % do not terminate mission even if rocket touches ground during the first second
 
 motorDynamics = DRSS.core.dynamics.Motor( ...
@@ -82,7 +73,7 @@ rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   'A_fin_e', A_fin_e, ... fin exposed area
   's', fin_semispan_len, ... fin semispan
   'cr', fin_root_len, ... fin root length
-  'cm', 4 * uc.in_to_m, ... fin cm length
+  'cm', 4 * uc.in_to_m, ... fin midchord length
   'ct', fin_tip_len, ... fin tip length
   't_fin', 0.128 * uc.in_to_m, ... fin thickness
   'L_fin', L_fin, ... length to foremost tip of fins fins from tip of nose cone
@@ -92,6 +83,14 @@ rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   'CP', 67.161 * uc.in_to_m, ... hardcoded CP
   'Wr', 11 * uc.mph_to_mps ... reference (base) wind velocity
 );
+
+% LaunchRailDynamics will automatically set initial state for us
+launchRailDynamics = DRSS.core.dynamics.LaunchRail() ...
+  .setLaunchRailAngleDeg(5) ...
+  .setLaunchRailLength(12 * 12 * uc.in_to_m) ...
+  .setLaunchRailButtonLoc(61 * uc.in_to_m) ...
+  .setLaunchRailExitVelocityMethod(DRSS.core.dynamics.LaunchExitVelocityMethods.RAIL_BUTTON_CROSSES_RAIL_TIP) ...
+  .bindToGravityDynamics(gravityDynamics);
 
 %% Simulate Rocket Ascent
 
@@ -110,7 +109,7 @@ sys = DRSS.core.sim.System("Ascent to Apogee") ...
   .subjectTo(gravityDynamics) ...
   .subjectTo(motorDynamics) ...
   .subjectTo(rocketDynamics) ...
-  .setSystemState(initialState);
+  .subjectTo(launchRailDynamics);
 
 % Hyperparameter optimization for ODE45Solver is extremely important; see the
 % ODE45Solver.m source code for more detailed information on how to optimize
@@ -118,7 +117,8 @@ sys = DRSS.core.sim.System("Ascent to Apogee") ...
 solver = DRSS.solver.ODE45Solver(sys) ...
   .setCaptureResultantParameters(false) ... % Whether to capture time variant params (i.e., m, mdot, I), which slows down the solver drastically
   .setPrintPerformanceSummary(true) ...
-  .configureODE('RelTol', 1e-3);
+  .configureODE('RelTol', 1e-3) ... % 1e-3 for prototyping, 1e-8 for reports
+  .overrideODEFunc(@ode45); % ode113 (2x more space efficient/less frames, run at 1e-9 rel tol), ode45 (default), ode89 (high precision)
 
 % solver.debugFlag = true;
 
@@ -129,11 +129,24 @@ solver = DRSS.solver.ODE45Solver(sys) ...
 % sys.momentOfInertia()
 % L1400 legacy code: I0=7.4177; DRSS: 7.1587
 
-% plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t))
-% plot(resultantStates.t, resultantStates.y .* uc.m_to_ft)
-% plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
-% plot(resultantStates.t, rad2deg(resultantStates.theta))
+% plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t), '-o')
+% plot(resultantStates.t, resultantStates.y .* uc.m_to_ft, '-o')
+% plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft, '-o')
+plot(resultantStates.t, rad2deg(resultantStates.theta), '-o')
 % plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
 % plot(resultantParameters.t, resultantParameters.I)
-% plot(resultantParameters.t, resultantParameters.equivForceY)
+% plot(resultantParameters.t, resultantParameters.equivForceY, '-o')
 % xlim([0 0.1])
+
+% plot([0 launchRailDynamics.launchRailClearanceVec(1)],[0 launchRailDynamics.launchRailClearanceVec(2)], 'r-', 'LineWidth', 3)
+hold on
+% plot([0 launchRailDynamics.launchRailVec(1)],[0 launchRailDynamics.launchRailVec(2)], 'k-', 'LineWidth', 4)
+% plot(resultantStates.x, resultantStates.y, 'o-')
+xline(launchRailDynamics.t_launchRailCleared);
+% scatter(launchRailDynamics.cg_loc_launchRailExit(1), launchRailDynamics.cg_loc_launchRailExit(2), 20)
+
+% disp(launchRailDynamics.launchRailClearanceVec)
+
+% DRSS: clears rail at CG=[0.3393, 3.8782]; Legacy: CG=[0.3051, 3.4875]
+
+% fprintf("LRE: %.3f fps\n", launchRailDynamics.v_launchRailExit .* uc.mps_to_fps);

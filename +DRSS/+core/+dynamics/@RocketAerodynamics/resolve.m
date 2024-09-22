@@ -85,6 +85,11 @@ function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
   % FN_foil = F_lift_foil * cos(alpha) + F_drag_foil * sin(alpha);
   FA = 0.5 * CA * this.A * rho * v_inf^2; % + FA_foil;
   FN = 0.5 * CN * this.A * rho * v_inf^2; % + FN_foil;
+
+  if ss.forceConstantTheta
+    FN = 0;
+  end
+
   % M_foil = FN_foil * L_foil_arm;
   M = FN * meta.D * ssm;
 
