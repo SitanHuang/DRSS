@@ -80,8 +80,7 @@ rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   'L_fin_end', L_fin_end, ... length from tip of fins to end of section
   'N_fins', 4, ... number of fins
   'CDr', 0.5, ... hardcoded rocket CD
-  'CP', 67.161 * uc.in_to_m, ... hardcoded CP
-  'Wr', 11 * uc.mph_to_mps ... reference (base) wind velocity
+  'CP', 67.161 * uc.in_to_m ... hardcoded CP
 );
 
 % LaunchRailDynamics will automatically set initial state for us
@@ -106,7 +105,7 @@ disableAscentDynamics = DRSS.core.dynamics.events.TriggerOnEnable() ...
 apogeeListener.bindTo(disableAscentDynamics);
 
 % Only start apogee detection when launch rail clears (LaunchRail implements the
-% EventedDynamics abstract class); this is to avoid false triggers due to
+% IEventTriggerDynamics abstract class); this is to avoid false triggers due to
 % jitters between motor thrust and gravity
 launchRailDynamics.bindTo(apogeeListener);
 
@@ -117,7 +116,8 @@ launchRailDynamics.bindTo(apogeeListener);
 % because non-System MassGroups calculate moments of
 % inertia by assuming homogenous distribution in length
 sys = DRSS.core.sim.System("Ascent to Apogee") ...
-  .setLaunchSiteElevation(800 * uc.ft_to_m) ... % set launch site elevation above mean sea level
+  .setLaunchSiteElevation(800 * uc.ft_to_m) ... set launch site elevation above mean sea level
+  .setLaunchSiteWindSpeed(11 * uc.mph_to_mps) ... reference (base) wind velocity
   .appendChild(noseCone) ...
   .appendChild(payloadBay) ...
   .appendChild(recoveryBay) ...

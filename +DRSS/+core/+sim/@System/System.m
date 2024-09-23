@@ -23,6 +23,8 @@ classdef System < DRSS.core.obj.MassGroup
     launchSiteTemp = 26.67;
     % launch site pressure [Pa]
     launchSitePressure = 101592;
+    % launch site reference wind speed [m/s]
+    launchSiteWindSpeed = 0;
   end
 
   methods
@@ -53,6 +55,9 @@ classdef System < DRSS.core.obj.MassGroup
     end
     function this=setLaunchSitePressure(this, val)
       this.launchSitePressure = val;
+    end
+    function this=setLaunchSiteWindSpeed(this, val)
+      this.launchSiteWindSpeed = val;
     end
 
     function this=setSystemState(this, val)

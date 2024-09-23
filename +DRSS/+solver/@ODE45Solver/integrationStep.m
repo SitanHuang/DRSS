@@ -2,8 +2,9 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   dynLen = length(system.dynamicsList);
 
-  systemState = system.systemState.fromStateVec(t, states);
-
+  systemState = system.systemState ...
+    .fromStateVec(t, states) ...
+    .recalculateAirWindProperties(system);
 
   if this.debugFlag
     fprintf('# integrationStep: t=%.9f, xdd=%.2f, ydd=%.2f, tdd=%.2f, forceConstantTheta=%i\n', t, systemState.xdd, systemState.ydd, systemState.thetadd, systemState.forceConstantTheta);

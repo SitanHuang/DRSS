@@ -25,13 +25,14 @@ function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
   v_CP_y = ss.yd - meta.D * ss.thetad * sin(ss.theta) * ssm;
 
   % flow conditions
-  v_wind = this.wind_calc(meta.Wr, eps, ss.y, 7); % 7 = power law denominator for wind
-
-  phi = atan2(v_CP_x + v_wind, v_CP_y);
-  v_inf = sqrt((v_CP_x + v_wind)^2 + v_CP_y^2);
+  phi = atan2(v_CP_x + ss.v_wind, v_CP_y);
+  v_inf = sqrt((v_CP_x + ss.v_wind)^2 + v_CP_y^2);
   v = sqrt(ss.xd^2 + ss.yd^2);
   alpha = phi - ss.theta;
-  [rho, T, p, mu] = this.atmosphere(ss.y, T0, p0, R, B, g0);
+  rho = ss.airDensity;
+  T = ss.airTemp;
+  p = ss.airPressure;
+  mu = ss.airDynViscosity;
   Re = rho * v_inf * L / mu;
   M_inf = v_inf / sqrt(gamma * R * T);
 

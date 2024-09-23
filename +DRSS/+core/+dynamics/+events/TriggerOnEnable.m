@@ -1,5 +1,5 @@
-classdef TriggerOnEnable < DRSS.core.dynamics.EventedDynamics
-  % TRIGGERONENABLE An EventedDynamics obj to trigger the list of bounded dynamics on
+classdef TriggerOnEnable < DRSS.core.dynamics.IEventTriggerDynamics
+  % TRIGGERONENABLE An IEventTriggerDynamics obj to trigger the list of bounded dynamics on
   %   enable.
 
   methods

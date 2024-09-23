@@ -1,7 +1,7 @@
-classdef LaunchRail < DRSS.core.dynamics.EventedDynamics
+classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
   % LAUNCHRAIL A Dynamics object that sets the initial state of the system and
   %   forces theta to be constant while a System is on the launch rail.
-  %   LaunchRail implements the EventedDynamics abstract class to trigger
+  %   LaunchRail implements the IEventTriggerDynamics abstract class to trigger
   %   other dynamics when rail exit is detected.
   %   LaunchRail also disables itself via setEnabled(false) on detecting
   %   systemState.t > t_launchRailCleared to avoid interfering with
@@ -75,7 +75,7 @@ classdef LaunchRail < DRSS.core.dynamics.EventedDynamics
 
   methods
     function [this, sys, ss0] = resetTransientData(this, sys, ss0)
-      [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.EventedDynamics(this, sys, ss0);
+      [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.IEventTriggerDynamics(this, sys, ss0);
 
       this.t_launchRailCleared = inf;
       this.v_launchRailExit = 0;

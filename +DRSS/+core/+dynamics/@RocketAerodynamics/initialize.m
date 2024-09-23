@@ -52,7 +52,6 @@ function this=initialize(this, inputs)
       % 'A',          'Rocket cross-sectional area [m^2]'
       'CDr',        'Reference drag coefficient [1]'
       'CP',         'Constant rocket CP location [m]'
-      'Wr',         'Reference wind speed [m/s]'
     };
 
     propNames = requiredProps(:,1);

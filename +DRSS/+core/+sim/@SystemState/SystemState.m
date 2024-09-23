@@ -30,12 +30,36 @@ classdef SystemState < handle
     prevTime = [] % for internal tracking
     forceConstantTheta = [] % internal use, tells solver to force thetad=thetadd=0
 
+    % runtime, transient, internal use:
+
+    v_wind = [];
+    airDensity = [];
+    airTemp = [];
+    airPressure = [];
+    airDynViscosity = [];
+
     terminate = false % set during runtime to true terminates integration
   end
 
   methods
     function this = SystemState()
       this.params = containers.Map();
+    end
+
+    function this = recalculateAirWindProperties(this, sys)
+      T0 = sys.launchSiteTemp + 273.15; % Kelvin
+      p0 = sys.launchSitePressure;
+      eps = sys.launchSiteElevation;
+
+      B = 6.5e-3; % temperature lapse rate in troposphere [K/m]
+      R = 287; % ideal gas constant for air [J/(kg*K)]
+      gamma = 1.4; % spec. heat ratio for air
+      g0 = 9.80665; % gravitational acceleration at mean sea level [m/s^2]
+
+      this.v_wind = DRSS.legacy.wind_calc(sys.launchSiteWindSpeed, eps, this.y, 7);  % 7 = power law denominator for wind
+
+      [this.airDensity, this.airTemp, this.airPressure, this.airDynViscosity] = ...
+        DRSS.legacy.atmosphere(this.y, T0, p0, R, B, g0);
     end
 
     function copy = makeShallowCopy(this)

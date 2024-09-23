@@ -1,4 +1,4 @@
-classdef EventedDynamics < DRSS.core.dynamics.Dynamics
+classdef IEventTriggerDynamics < DRSS.core.dynamics.Dynamics
   properties
     % Dynamics to enable/disable
     boundDynamics = [];
@@ -18,11 +18,13 @@ classdef EventedDynamics < DRSS.core.dynamics.Dynamics
     function this = bindTo(this, dynamicsObj)
       % BINDTO Bind Dynamics that will be enabled or disabled upon event
       %   trigger. Note that this dynamicsObj can also be another
-      %   EventedDynamics.
+      %   IEventTriggerDynamics.
       this.boundDynamics = [this.boundDynamics {dynamicsObj}];
     end
 
     function this = setDisableBoundDynamicsOnTrigger(this, val)
+      % SETDISABLEBOUNDDYNAMICSONTRIGGER to disable or enable the list of bound
+      %   Dynamics on trigger.
       this.disableBoundDynamicsOnTrigger = val;
     end
   end
