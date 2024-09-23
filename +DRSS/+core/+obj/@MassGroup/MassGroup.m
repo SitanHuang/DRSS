@@ -1,5 +1,5 @@
 classdef MassGroup < DRSS.core.obj.Mass
-  %MASSGROUP Abstract representation of a serial, 1D arrangement of Mass objs
+  % MASSGROUP Abstract representation of a serial, 1D arrangement of Mass objs
   %   and any of their derivatives (e.g., another MassGroup)
 
   properties

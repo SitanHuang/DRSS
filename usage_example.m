@@ -92,6 +92,24 @@ launchRailDynamics = DRSS.core.dynamics.LaunchRail() ...
   .setLaunchRailExitVelocityMethod(DRSS.core.dynamics.LaunchExitVelocityMethods.RAIL_BUTTON_CROSSES_RAIL_TIP) ...
   .bindToGravityDynamics(gravityDynamics);
 
+%% Define Events
+
+% Apogee event triggers on yd < 0
+apogeeListener = DRSS.core.dynamics.events.Apogee() ...
+  .setEnabledOnInit(false); % Don't let launch rail jitter trigger false alarm
+
+disableAscentDynamics = DRSS.core.dynamics.events.TriggerOnEnable() ...
+  .setDisableBoundDynamicsOnTrigger(true) ...
+  .bindTo(rocketDynamics) ...
+  .bindTo(apogeeListener);
+
+apogeeListener.bindTo(disableAscentDynamics);
+
+% Only start apogee detection when launch rail clears (LaunchRail implements the
+% EventedDynamics abstract class); this is to avoid false triggers due to
+% jitters between motor thrust and gravity
+launchRailDynamics.bindTo(apogeeListener);
+
 %% Simulate Rocket Ascent
 
 % System must be the top level MassGroup to calculate
@@ -107,9 +125,12 @@ sys = DRSS.core.sim.System("Ascent to Apogee") ...
   .appendChild(motor) ...
   .setInertialGeometryRecursive(rocketCylindricalInertialGeometry) ...
   .subjectTo(gravityDynamics) ...
+  .subjectTo(launchRailDynamics) ...
   .subjectTo(motorDynamics) ...
   .subjectTo(rocketDynamics) ...
-  .subjectTo(launchRailDynamics);
+  ... Events:
+  .subjectTo(apogeeListener) ...
+  .subjectTo(disableAscentDynamics);
 
 % Hyperparameter optimization for ODE45Solver is extremely important; see the
 % ODE45Solver.m source code for more detailed information on how to optimize
@@ -121,6 +142,7 @@ solver = DRSS.solver.ODE45Solver(sys) ...
   .overrideODEFunc(@ode45); % ode113 (2x more space efficient/less frames, run at 1e-9 rel tol), ode45 (default), ode89 (high precision)
 
 % solver.debugFlag = true;
+% solver.setTimeSpan([0 0.5]);
 
 [resultantStates, resultantParameters] = solver.solve();
 
@@ -131,8 +153,8 @@ solver = DRSS.solver.ODE45Solver(sys) ...
 
 % plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t), '-o')
 % plot(resultantStates.t, resultantStates.y .* uc.m_to_ft, '-o')
-% plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft, '-o')
-plot(resultantStates.t, rad2deg(resultantStates.theta), '-o')
+plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft, '-o')
+% plot(resultantStates.t, rad2deg(resultantStates.theta), '-o')
 % plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
 % plot(resultantParameters.t, resultantParameters.I)
 % plot(resultantParameters.t, resultantParameters.equivForceY, '-o')
@@ -142,11 +164,12 @@ plot(resultantStates.t, rad2deg(resultantStates.theta), '-o')
 hold on
 % plot([0 launchRailDynamics.launchRailVec(1)],[0 launchRailDynamics.launchRailVec(2)], 'k-', 'LineWidth', 4)
 % plot(resultantStates.x, resultantStates.y, 'o-')
-xline(launchRailDynamics.t_launchRailCleared);
+xline(launchRailDynamics.systemStateAtTrigger.x .* uc.m_to_ft);
+xline(apogeeListener.systemStateAtTrigger.x .* uc.m_to_ft);
 % scatter(launchRailDynamics.cg_loc_launchRailExit(1), launchRailDynamics.cg_loc_launchRailExit(2), 20)
 
 % disp(launchRailDynamics.launchRailClearanceVec)
 
 % DRSS: clears rail at CG=[0.3393, 3.8782]; Legacy: CG=[0.3051, 3.4875]
 
-% fprintf("LRE: %.3f fps\n", launchRailDynamics.v_launchRailExit .* uc.mps_to_fps);
+fprintf("LRE: %.3f fps\n", launchRailDynamics.v_launchRailExit .* uc.mps_to_fps);

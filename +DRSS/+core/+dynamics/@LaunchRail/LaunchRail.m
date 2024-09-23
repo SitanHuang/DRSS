@@ -1,6 +1,11 @@
-classdef LaunchRail < DRSS.core.dynamics.Dynamics
+classdef LaunchRail < DRSS.core.dynamics.EventedDynamics
   % LAUNCHRAIL A Dynamics object that sets the initial state of the system and
   %   forces theta to be constant while a System is on the launch rail.
+  %   LaunchRail implements the EventedDynamics abstract class to trigger
+  %   other dynamics when rail exit is detected.
+  %   LaunchRail also disables itself via setEnabled(false) on detecting
+  %   systemState.t > t_launchRailCleared to avoid interfering with
+  %   systemState.forceConstantTheta with other Dynamics.
 
   properties
     launchRailAngleDeg = 0 % launch angle [deg]
@@ -9,6 +14,8 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
     launchRailButtonLoc = 0 % forward rail button location from nose cone [m]
 
     launchRailExitVelocityMethod DRSS.core.dynamics.LaunchExitVelocityMethods = DRSS.core.dynamics.LaunchExitVelocityMethods.RAIL_BUTTON_CROSSES_RAIL_TIP
+
+    selfDisablingTimeThreshold = 0.25 % improves accuracy; change if you know what you're doing
   end
 
   properties (Transient, SetAccess=protected)
@@ -31,6 +38,10 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
   end
 
   methods
+    function this = LaunchRail
+      this.disableBoundDynamicsOnTrigger = false;
+    end
+
     function this = setLaunchRailAngleDeg(this, val)
       this.launchRailAngleDeg = val;
     end
@@ -48,7 +59,7 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
     end
 
     function this = bindToGravityDynamics(this, gravityDynamics)
-      % BINDTOGRAVITYDYNAMICS Adjusts the grounding height of a Gravity Dyanmics
+      % BINDTOGRAVITYDYNAMICS Adjusts the grounding height of a Gravity Dynamics
       %   object at the beginning of a simulation.
       %
       % See also: DRSS.core.dynamics.Gravity
@@ -64,6 +75,8 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
 
   methods
     function [this, sys, ss0] = resetTransientData(this, sys, ss0)
+      [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.EventedDynamics(this, sys, ss0);
+
       this.t_launchRailCleared = inf;
       this.v_launchRailExit = 0;
 
@@ -108,14 +121,6 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
       this.isCleared = ss.y > y_clear || ss.t > this.t_launchRailCleared;
 
       ss.forceConstantTheta = ~this.isCleared;
-    end
-
-    function [this, sys, terminate, xdd, ydd, tdd, mdot] = postAdjustment(this, sys, ss)
-      terminate = false;
-      xdd = 0;
-      ydd = 0;
-      tdd = 0;
-      mdot = 0;
 
       if this.isCleared
         % Rocket CLEARED launch rail
@@ -123,6 +128,11 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
           this.t_launchRailCleared = ss.t;
           this.v_launchRailExit = sqrt(ss.yd^2 + ss.xd^2);
           this.cg_loc_launchRailExit = [ss.x; ss.y];
+
+          this.onEventTrigger(sys, ss);
+        elseif ss.t > this.t_launchRailCleared + this.selfDisablingTimeThreshold
+          % Disable self
+          this.setEnabled(false);
         end
       end
     end
@@ -132,6 +142,12 @@ classdef LaunchRail < DRSS.core.dynamics.Dynamics
     function [x0, y0] = calcCG0(this, sys)
       x0 = (sys.len - sys.cgX) * sind(this.launchRailAngleDeg);
       y0 = (sys.len - sys.cgX) * cosd(this.launchRailAngleDeg);
+    end
+  end
+
+  methods ( Access=protected)
+    function evaluateEvent(~, ~)
+      % stub
     end
   end
 end

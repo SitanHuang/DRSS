@@ -38,16 +38,38 @@ classdef SystemState < handle
       this.params = containers.Map();
     end
 
+    function copy = makeShallowCopy(this)
+      copy = DRSS.core.sim.SystemState();
+      copy.x = this.x;
+      copy.xd = this.xd;
+      copy.xdd = this.xdd;
+      copy.y = this.y;
+      copy.yd = this.yd;
+      copy.ydd = this.ydd;
+      copy.theta = this.theta;
+      copy.thetad = this.thetad;
+      copy.thetadd = this.thetadd;
+      copy.m = this.m;
+      copy.I = this.I;
+      copy.mdot = this.mdot;
+      copy.equivForceX = this.equivForceX;
+      copy.equivForceY = this.equivForceY;
+      copy.t = this.t;
+      copy.prevTime = this.prevTime;
+      copy.forceConstantTheta = this.forceConstantTheta;
+      copy.terminate = this.terminate;
+    end
+
     function total_mem = estimateMemorySize(obj)
       props = properties(obj);
 
       total_mem = 0;
       for ii=1:length(props)
-          % Make shallow copy
-          curr_prop = obj.(props{ii});  %#ok<*NASGU>
+        % Make shallow copy
+        curr_prop = obj.(props{ii});  %#ok<*NASGU>
 
-          s = whos('curr_prop');
-          total_mem = total_mem + s.bytes;
+        s = whos('curr_prop');
+        total_mem = total_mem + s.bytes;
       end
     end
 

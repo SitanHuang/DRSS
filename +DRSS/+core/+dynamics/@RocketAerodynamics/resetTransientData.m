@@ -1,4 +1,6 @@
-function [this, sys, sysState0] = resetTransientData(this, sys, sysState0)
+function [this, sys, ss0] = resetTransientData(this, sys, ss0)
+  [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.Dynamics(this, sys, ss0);
+
   meta = this.aerodynamicProfile;
 
   L = sys.len;

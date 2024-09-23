@@ -1,7 +1,13 @@
 function dsdt = integrationStep(this, t, states, system, resultantParameters)
+
   dynLen = length(system.dynamicsList);
 
   systemState = system.systemState.fromStateVec(t, states);
+
+
+  if this.debugFlag
+    fprintf('# integrationStep: t=%.9f, xdd=%.2f, ydd=%.2f, tdd=%.2f, forceConstantTheta=%i\n', t, systemState.xdd, systemState.ydd, systemState.thetadd, systemState.forceConstantTheta);
+  end
 
   if systemState.m == 0 || systemState.I == 0
     recalcInertialProperties(system, systemState);
@@ -13,6 +19,11 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   for i=1:dynLen
     dyn = system.dynamicsList{i};
+
+    if ~dyn.enabled
+      continue;
+    end
+
     [~, ~, massChanged] = dyn.step(system, systemState);
 
     requestMassRecalc = requestMassRecalc | massChanged;
@@ -34,6 +45,14 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   for i=1:dynLen
     dyn = system.dynamicsList{i};
+
+    if ~dyn.enabled
+      if this.debugFlag
+        fprintf('RSLV: %30s, DISABLED\n', class(dyn));
+      end
+
+      continue;
+    end
 
     [~, ~, tterminate, xxdd, yydd, ttdd, mmdot] = ...
       resolve(dyn, system, systemState);
@@ -59,6 +78,14 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
   for i=1:dynLen
     dyn = system.dynamicsList{i};
 
+    if ~dyn.enabled
+      if this.debugFlag
+        fprintf('POST: %30s, DISABLED\n', class(dyn));
+      end
+
+      continue;
+    end
+
     [~, ~, tterminate, xxdd, yydd, ttdd, mmdot] = ...
       postAdjustment(dyn, system, systemState);
 
@@ -73,15 +100,6 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
     end
   end
 
-  if this.captureResultantParameters
-    resultantParameters.t(end + 1) = t;
-    resultantParameters.m(end + 1) = systemState.m;
-    resultantParameters.mdot(end + 1) = systemState.mdot;
-    resultantParameters.I(end + 1) = systemState.I;
-    resultantParameters.equivForceX(end + 1) = systemState.xdd * systemState.m;
-    resultantParameters.equivForceY(end + 1) = systemState.ydd * systemState.m;
-  end
-
   if this.debugFlag
     fprintf(systemState.toOneLinerString());
   end
@@ -89,6 +107,15 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
   if systemState.forceConstantTheta
     systemState.thetad = 0;
     systemState.thetadd = 0;
+  end
+
+  if this.captureResultantParameters
+    resultantParameters.t(end + 1) = t;
+    resultantParameters.m(end + 1) = systemState.m;
+    resultantParameters.mdot(end + 1) = systemState.mdot;
+    resultantParameters.I(end + 1) = systemState.I;
+    resultantParameters.equivForceX(end + 1) = systemState.xdd * systemState.m;
+    resultantParameters.equivForceY(end + 1) = systemState.ydd * systemState.m;
   end
 
   dsdt = systemState.toStateVecDeriv();

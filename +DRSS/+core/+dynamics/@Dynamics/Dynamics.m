@@ -1,12 +1,30 @@
 classdef Dynamics < handle
   properties
+    enabledOnInit = true;  % Flag to enable or disable the dynamics on init
+  end
+
+  properties (Transient, SetAccess=protected)
+    enabled;        % Runtime flag to enable or disable dynamics
   end
 
   methods
+    function this = setEnabledOnInit(this, val)
+      this.enabledOnInit = val;
+    end
+  end
+
+  methods
+    function this = setEnabled(this, val)
+      % Internal use only
+      this.enabled = val;
+    end
+
     function [this, sys, sysState0] = resetTransientData(this, sys, sysState0)
       % RESETTRANSIENTDATA The callback function to run between simulations
       %   since the Dynamics obj is a handle and may be reused in different
       %   System objects or the same System object simulated multiple times
+
+      this.setEnabled(this.enabledOnInit);
     end
     function [dyn, sys, massChanged]=step(dyn, sys, sysState)
       % STEP callback on every integration step run once for each Dynamics in
