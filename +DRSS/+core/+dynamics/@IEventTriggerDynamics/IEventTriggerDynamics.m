@@ -62,7 +62,7 @@ classdef IEventTriggerDynamics < DRSS.core.dynamics.Dynamics
       % Enable/disable bound dynamics
       for i = 1:length(this.boundDynamics)
         dyn = this.boundDynamics{i};
-        dyn.setEnabled(~this.disableBoundDynamicsOnTrigger);
+        dyn.setEnabled(~this.disableBoundDynamicsOnTrigger, sys, ss);
       end
 
       this.systemStateAtTrigger = ss.makeShallowCopy();

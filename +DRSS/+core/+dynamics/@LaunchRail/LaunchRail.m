@@ -132,7 +132,7 @@ classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
           this.onEventTrigger(sys, ss);
         elseif ss.t > this.t_launchRailCleared + this.selfDisablingTimeThreshold
           % Disable self
-          this.setEnabled(false);
+          this.setEnabled(false, sys, ss);
         end
       end
     end

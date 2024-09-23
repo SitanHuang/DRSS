@@ -14,9 +14,13 @@ classdef Dynamics < handle
   end
 
   methods
-    function this = setEnabled(this, val)
+    function [this, val, sys, ss] = setEnabled(this, val, sys, ss)
       % Internal use only
       this.enabled = val;
+
+      if val
+        this.onEnable(sys, ss);
+      end
     end
 
     function [this, sys, sysState0] = resetTransientData(this, sys, sysState0)
@@ -24,7 +28,7 @@ classdef Dynamics < handle
       %   since the Dynamics obj is a handle and may be reused in different
       %   System objects or the same System object simulated multiple times
 
-      this.setEnabled(this.enabledOnInit);
+      this.setEnabled(this.enabledOnInit, sys, sysState0);
     end
     function [dyn, sys, massChanged]=step(dyn, sys, sysState)
       % STEP callback on every integration step run once for each Dynamics in
@@ -72,6 +76,11 @@ classdef Dynamics < handle
       ydd = 0;
       tdd = 0;
       mdot = 0;
+    end
+  end
+
+  methods (Access=protected)
+    function [this, sys, ss] = onEnable(this, sys, ss)
     end
   end
 end

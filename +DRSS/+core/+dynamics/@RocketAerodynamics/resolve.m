@@ -25,8 +25,8 @@ function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
   v_CP_y = ss.yd - meta.D * ss.thetad * sin(ss.theta) * ssm;
 
   % flow conditions
-  phi = atan2(v_CP_x + ss.v_wind, v_CP_y);
-  v_inf = sqrt((v_CP_x + ss.v_wind)^2 + v_CP_y^2);
+  phi = atan2(v_CP_x + ss.windSpeed, v_CP_y);
+  v_inf = sqrt((v_CP_x + ss.windSpeed)^2 + v_CP_y^2);
   v = sqrt(ss.xd^2 + ss.yd^2);
   alpha = phi - ss.theta;
   rho = ss.airDensity;
