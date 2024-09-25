@@ -15,8 +15,8 @@ classdef IEventTriggerDynamics < DRSS.core.dynamics.Dynamics
   end
 
   methods
-    function this = bindTo(this, dynamicsObj)
-      % BINDTO Bind Dynamics that will be enabled or disabled upon event
+    function this = trigger(this, dynamicsObj)
+      % TRIGGER Bind Dynamics that will be enabled or disabled upon event
       %   trigger. Note that this dynamicsObj can also be another
       %   IEventTriggerDynamics.
       this.boundDynamics = [this.boundDynamics {dynamicsObj}];

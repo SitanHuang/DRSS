@@ -5,6 +5,9 @@ classdef Dynamics < handle
 
   properties (Transient, SetAccess=protected)
     enabled;        % Runtime flag to enable or disable dynamics
+
+    t_lastEnable;
+    t_lastDisable;
   end
 
   methods
@@ -19,7 +22,10 @@ classdef Dynamics < handle
       this.enabled = val;
 
       if val
+        this.t_lastEnable = ss.t;
         this.onEnable(sys, ss);
+      else
+        this.t_lastDisable = ss.t;
       end
     end
 

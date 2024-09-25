@@ -28,7 +28,7 @@ function this=initialize(this, inputs)
       % 'L_body',     'Rocket body total length [m]'
       % Know from D & sys obj:
       % 'A_planform', 'Rocket body projected side area not including fins [m^2]'
-      'L_tail',     'Length to boat tail [m]'
+      'l_tail',     'Length to boat tail from nose tip [m]'
       'L_tail_c',   'Boat tail curved section length [m]'
       'L_tail_f',   'Boat tail flat section length [m]'
       'L_tail_rr',  'Retaining ring length from end of boat tail [in]'
@@ -37,7 +37,7 @@ function this=initialize(this, inputs)
       'A_fin',      'Fin area [m^2]'
       'N_fins',     'Number of fins []'
       'A_fin_e',    'Extended fin area [m^2]'
-      'L_fin',      'Length to tip of fins from tip of nose [m]'
+      'l_fin',      'Length to tip of fins from tip of nose [m]'
       't_fin',      'Fin thickness [m]'
       's',          'Fin semispan [m]'
       'cr',         'Fin root chord length [m]'

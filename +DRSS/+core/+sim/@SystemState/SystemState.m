@@ -38,6 +38,8 @@ classdef SystemState < handle
     airPressure = [];
     airDynViscosity = [];
 
+    massChanged = false % set during runtime to recalc inertial properties for the next tick
+
     terminate = false % set during runtime to true terminates integration
   end
 

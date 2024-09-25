@@ -2,8 +2,8 @@
 
 clear;
 
-addpath(fullfile(fileparts(mfilename('fullpath')), 'VADL'))
-addpath(fullfile(fileparts(mfilename('fullpath')), 'VADL/Motor Data'))
+addpath(fullfile(fileparts(mfilename('fullpath')), '+VADL'))
+addpath(fullfile(fileparts(mfilename('fullpath')), '+VADL/Motor Data'))
 
 uc = DRSS.util.unitConv;
 
@@ -49,14 +49,14 @@ gravityDynamics = DRSS.core.dynamics.Gravity() ...
   .setGroundingTimeThreshold(1); % do not terminate mission even if rocket touches ground during the first second
 
 motorDynamics = DRSS.core.dynamics.Motor( ...
-  fullfile(fileparts(mfilename('fullpath')), 'VADL/Motor Data/L1400.csv'), ...
-  "L1400", @drss_motor_database);
+  fullfile(fileparts(mfilename('fullpath')), '+VADL/Motor Data/L1400.csv'), ...
+  "L1400", @VADL.vadl_motor_database);
 motor = motorDynamics.genMotorMass(); % the motor Mass is automatically bound to this motorDynamics
 
 sys.appendChild(motor);
 
-L_fin = 80.0 * uc.in_to_m; % length to foremost tip of fins fins from tip of nose cone
-L_fin_end = 9.0 * uc.in_to_m; % length from tip of fins to end of section
+l_fin = 80.0 * uc.in_to_m; % length to foremost tip of fins fins from tip of nose cone
+l_fin_end = 9.0 * uc.in_to_m; % length from tip of fins to end of section
 fin_root_len = 6.5 * uc.in_to_m; % fin root length
 fin_tip_len = 2.7 * uc.in_to_m; % fin tip length
 fin_semispan_len = 5.8 * uc.in_to_m; % fin semispan
@@ -66,7 +66,7 @@ A_fin_e = A_fin + (fin_root_len * rocket_diameter) / 2; % fin exposed area
 rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   'D', rocket_diameter, ... rocket diameter
   'L_nose', 7.5 * uc.in_to_m, ... nose cone length
-  'L_tail', L_fin + L_fin_end, ... total tail length
+  'l_tail', l_fin + l_fin_end, ... length from tip to boat tail
   'L_tail_c', 5 * uc.in_to_m, ... boat tail curved section length
   'L_tail_f', 1 * uc.in_to_m, ... boat tail flat section length
   'L_tail_rr', 1 * uc.in_to_m, ... retaining ring length from end of boat tail
@@ -79,8 +79,7 @@ rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   'cm', 4 * uc.in_to_m, ... fin midchord length
   'ct', fin_tip_len, ... fin tip length
   't_fin', 0.128 * uc.in_to_m, ... fin thickness
-  'L_fin', L_fin, ... length to foremost tip of fins fins from tip of nose cone
-  'L_fin_end', L_fin_end, ... length from tip of fins to end of section
+  'l_fin', l_fin, ... length to foremost tip of fins fins from tip of nose cone
   'N_fins', 4, ... number of fins
   'CDr', 0.5, ... hardcoded rocket CD
   'CP', 67.161 * uc.in_to_m ... hardcoded CP
@@ -102,20 +101,18 @@ drogue = DRSS.core.dynamics.Parachute() ...
 % .deploymentTimeDelay(0);
 
 main = DRSS.core.dynamics.Parachute() ...
-  .setDiameter(4 * 12 * uc.in_to_m) ...
+  .setDiameter(6 * 12 * uc.in_to_m) ...
   .setCD(2.2) ...
   .setN(9) ... (toroidal = 9, elliptical = 8)
   .setEnabledOnInit(false);
 
-% Legacy: tf_m = 0.7398
-
 % reference area for vertical drag calculations
-% Ar = (rocketDynamics.A + rocketDynamics.A_side + 0.0077 * 2) / 2; % take average of frontal and side projected areas
-% CDr = (1.42 * 1.41 * A_fin + 0.56 * (rocketDynamics.A_side + 0.0077 * 2)) / rocketDynamics.A;
-Ar = 0.181;
-CDr = 11.9188;
+Ar = (rocketDynamics.A + rocketDynamics.A_side) / 2; % take average of frontal and side projected areas
+CDr = (1.42 * 1.41 * A_fin + 0.56 * (rocketDynamics.A_side)) / rocketDynamics.A;
+% Ar = 0.181;
+% CDr = 11.9188;
 
-% Legacy:
+% Legacy drogue:
 % Ar = 0.1810
 % A = 0.0190 (same as DRSS)
 % Ar_side = 0.3430
@@ -123,6 +120,10 @@ CDr = 11.9188;
 % A_fin = 0.0172
 % Ar_side = 0.3430
 % FDr(ii) = 0.5*rho(ii)*CDr*A*v_inf_z(ii)^2;
+% FDr_side(ii) = 0.5*rho(ii)*CDr_side*Ar_side*v_inf_x(ii)^2;
+% Legacy Main:
+% CDr = CDr_original;
+% FDr(ii) = 0.5*rho(ii)*CDr*Ar*v_inf_z(ii)^2;
 % FDr_side(ii) = 0.5*rho(ii)*CDr_side*Ar_side*v_inf_x(ii)^2;
 
 rocketDescentDrag = DRSS.core.dynamics.SimpleDrag() ...
@@ -132,7 +133,7 @@ rocketDescentDrag = DRSS.core.dynamics.SimpleDrag() ...
   .setCD_side(1) ...
   .setEnabledOnInit(false);
 
-jettison = DRSS.core.dynamics.Jettison().bindTo(noseCone);
+jettison = DRSS.core.dynamics.Jettison().trigger(noseCone);
 
 %% Define Events
 
@@ -142,32 +143,32 @@ apogeeListener = DRSS.core.dynamics.events.Apogee() ...
 
 disableAscentDynamics = DRSS.core.dynamics.events.TriggerOnEnable() ...
   .setDisableBoundDynamicsOnTrigger(true) ...
-  .bindTo(rocketDynamics) ...
-  .bindTo(apogeeListener);
+  .trigger(rocketDynamics) ...
+  .trigger(apogeeListener);
 
 apogeeListener ...
-  .bindTo(disableAscentDynamics) ...
-  .bindTo(rocketDescentDrag) ...
-  .bindTo(drogue);
+  .trigger(disableAscentDynamics) ...
+  .trigger(rocketDescentDrag) ...
+  .trigger(drogue);
 
 % Only start apogee detection when launch rail clears (LaunchRail implements the
 % IEventTriggerDynamics abstract class); this is to avoid false triggers due to
 % jitters between motor thrust and gravity
-launchRailDynamics.bindTo(apogeeListener);
+launchRailDynamics.trigger(apogeeListener);
 
 mainDeploymentListener = DRSS.core.dynamics.events.Altitude() ...
   .setAlitude(600 * uc.ft_to_m) ...
   .setEnabledOnInit(false) ...
-  .bindTo(main);
+  .trigger(main);
 
-apogeeListener.bindTo(mainDeploymentListener);
+apogeeListener.trigger(mainDeploymentListener);
 
 jettisonListener = DRSS.core.dynamics.events.Altitude() ...
   .setAlitude(300 * uc.ft_to_m) ...
   .setEnabledOnInit(false) ...
-  .bindTo(jettison);
+  .trigger(jettison);
 
-mainDeploymentListener.bindTo(jettisonListener);
+mainDeploymentListener.trigger(jettisonListener);
 
 %% Simulate Rocket Ascent
 
@@ -196,8 +197,8 @@ sys = sys ...
 solver = DRSS.solver.ODE45Solver(sys) ...
   .setCaptureResultantParameters(true) ... % Whether to capture time variant params (i.e., m, mdot, I), which slows down the solver drastically
   .setPrintPerformanceSummary(true) ...
-  .configureODE('RelTol', 1e-9) ... % 1e-3 for prototyping, 1e-8 for reports
-  .overrideODEFunc(@ode89); % ode113 (2x more space efficient/less frames, run at 1e-9 rel tol), ode45 (default), ode89 (high precision)
+  .configureODE('RelTol', 1e-3) ... % 1e-3 for prototyping, 1e-8 for reports
+  .overrideODEFunc(@ode113); % ode113 (2x more space efficient/less frames, run at 1e-9 rel tol), ode45 (default), ode89 (high precision)
 
 % solver.debugFlag = true;
 % solver.setTimeSpan([0 0.5]);
@@ -210,28 +211,33 @@ solver = DRSS.solver.ODE45Solver(sys) ...
 % L1400 legacy code: I0=7.4177; DRSS: 7.1587
 
 % plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t), '-o')
-% plot(resultantStates.t, resultantStates.y .* uc.m_to_ft, '-o')
-plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft)
+% plot(resultantStates.t, resultantStates.y .* uc.m_to_ft)
+plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft); xlim([-500 4000])
 % plot(resultantStates.t, rad2deg(resultantStates.theta), '-o')
 % plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
 % plot(resultantParameters.t, resultantParameters.I)
 % plot(resultantParameters.t, resultantParameters.equivForceY, '-o')
 % xlim([0 0.1])
 
-% plot([0 launchRailDynamics.launchRailClearanceVec(1)],[0 launchRailDynamics.launchRailClearanceVec(2)], 'r-', 'LineWidth', 3)
+% plot([0 launchRailDynamics.launchRailButtonVec(1)],[0 launchRailDynamics.launchRailButtonVec(2)], 'r-', 'LineWidth', 3)
 hold on
 % plot([0 launchRailDynamics.launchRailVec(1)],[0 launchRailDynamics.launchRailVec(2)], 'k-', 'LineWidth', 4)
 % % plot(resultantStates.x, resultantStates.y, 'o-')
 % xline(launchRailDynamics.systemStateAtTrigger.x .* uc.m_to_ft);
-% xline(apogeeListener.systemStateAtTrigger.x .* uc.m_to_ft);
+xline(apogeeListener.systemStateAtTrigger.x .* uc.m_to_ft);
 % xline(mainDeploymentListener.systemStateAtTrigger.x .* uc.m_to_ft);
+% xline(main.t_deploy);
 % xline(main.t_complete);
+% xline(jettisonListener.t_trigger);
 % scatter(launchRailDynamics.cg_loc_launchRailExit(1), launchRailDynamics.cg_loc_launchRailExit(2), 20)
 
-% disp(launchRailDynamics.launchRailClearanceVec)
+% disp(launchRailDynamics.launchRailButtonVec)
 
 % DRSS: clears rail at CG=[0.3393, 3.8782]; Legacy: CG=[0.3051, 3.4875]
 
+fprintf("Apogee: %.3f ft\n", max(resultantStates.y) .* uc.m_to_ft);
 fprintf("LRE: %.3f fps\n", launchRailDynamics.v_launchRailExit .* uc.mps_to_fps);
-
+fprintf("Drift: %.3f ft\n", resultantStates.x(end) .* uc.m_to_ft);
+fprintf("Landing KE: %.3f lb-ft\n", resultantStates.yd(end)^2 * 0.5 * recoveryBay.m * uc.J_to_ftlbf);
+fprintf("Landing vel: %.3f fps\n", resultantStates.yd(end) * uc.mps_to_fps);
 fprintf("Descent Time: %.3f s\n", resultantStates.t(end) - apogeeListener.systemStateAtTrigger.t);

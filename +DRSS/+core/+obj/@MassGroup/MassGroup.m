@@ -6,6 +6,13 @@ classdef MassGroup < DRSS.core.obj.Mass
     massList = []
   end
 
+  properties
+    overriddenCGX = []
+    overriddenM = []
+    overriddenLen = []
+    overriddenSideArea = []
+  end
+
   methods
     function mg = appendChild(mg, child)
       mg.massList = [mg.massList {child}];
@@ -15,15 +22,19 @@ classdef MassGroup < DRSS.core.obj.Mass
 
     function obj=overrideCGX(obj, cgX)
       obj.cgX = cgX;
+      obj.overriddenCGX = cgX;
     end
     function obj=overrideM(obj, m)
       obj.m = m;
+      obj.overriddenM = m;
     end
     function obj=overrideLen(obj, len)
       obj.len = len;
+      obj.overriddenLen = len;
     end
     function obj=overrideSideArea(obj, sideArea)
       obj.sideArea = sideArea;
+      obj.overriddenSideArea = sideArea;
     end
 
     function this=setInertialGeometryRecursive(this, geometry)

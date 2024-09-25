@@ -10,8 +10,9 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
     fprintf('# integrationStep: t=%.9f, xdd=%.2f, ydd=%.2f, tdd=%.2f, forceConstantTheta=%i\n', t, systemState.xdd, systemState.ydd, systemState.thetadd, systemState.forceConstantTheta);
   end
 
-  if systemState.m == 0 || systemState.I == 0
+  if systemState.m == 0 || systemState.I == 0 || systemState.massChanged
     recalcInertialProperties(system, systemState);
+    systemState.massChanged = false;
   end
 
   % Prep Dynamics
@@ -32,8 +33,9 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   % Recalculate mass groups
 
-  if requestMassRecalc || t < systemState.prevTime
+  if requestMassRecalc || t < systemState.prevTime || systemState.massChanged
     recalcInertialProperties(system, systemState);
+    systemState.massChanged = false;
   end
 
   % Execute Dynamics

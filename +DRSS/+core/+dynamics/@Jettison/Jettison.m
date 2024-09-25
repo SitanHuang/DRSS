@@ -7,7 +7,8 @@ classdef Jettison < DRSS.core.dynamics.Dynamics
     function this = Jettison
       this.setEnabledOnInit(false);
     end
-    function this = bindTo(this, val)
+
+    function this = trigger(this, val)
       this.boundMass = val;
     end
   end
@@ -15,6 +16,7 @@ classdef Jettison < DRSS.core.dynamics.Dynamics
   methods (Access=protected)
     function [this, sys, ss] = onEnable(this, sys, ss)
       this.boundMass.m = 0;
+      ss.massChanged = true;
     end
   end
 end

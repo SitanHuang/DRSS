@@ -25,6 +25,9 @@ classdef System < DRSS.core.obj.MassGroup
     launchSitePressure = 101592;
     % launch site reference wind speed [m/s]
     launchSiteWindSpeed = 0;
+
+    % associated parameters freely available to users
+    configParams = struct();
   end
 
   methods
@@ -33,19 +36,6 @@ classdef System < DRSS.core.obj.MassGroup
 
       this.systemState = DRSS.core.sim.SystemState.createZeroState();
     end
-
-    % function obj=overrideCGX(obj, cgX) %#ok<INUSD>
-    %   error("Overrides are not allowed for a System obj")
-    % end
-    % function obj=overrideM(obj, m) %#ok<INUSD>
-    %   error("Overrides are not allowed for a System obj")
-    % end
-    % function obj=overrideLen(obj, len) %#ok<INUSD>
-    %   error("Overrides are not allowed for a System obj")
-    % end
-    % function obj=overrideSideArea(obj, sideArea) %#ok<INUSD>
-    %   error("Overrides are not allowed for a System obj")
-    % end
 
     function this=setLaunchSiteElevation(this, val)
       this.launchSiteElevation = val;
@@ -81,8 +71,8 @@ classdef System < DRSS.core.obj.MassGroup
         currentMass = this.massList{i};
 
         I = currentMass.calcMomentOfInertia( ...
-          this.cgX, ... % vehicle CG
-          lengthCursor + currentMass.cgX + currentMass.offset ... % length from nose cone to section cg
+          this.cgX, ... vehicle CG
+          lengthCursor + currentMass.cgX + currentMass.offset ... length from nose cone to section cg
         );
 
         this.IAarray{i} = {currentMass.label, 'I',I,'cg0',this.cgX,'l_cg_i',lengthCursor + currentMass.cgX + currentMass.offset};

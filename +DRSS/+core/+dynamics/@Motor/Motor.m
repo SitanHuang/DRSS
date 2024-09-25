@@ -101,7 +101,7 @@ classdef Motor < DRSS.core.dynamics.Dynamics
 
       xdd = (Th_n/ss.m) * cos(ss.theta) + (Th_t/ss.m) * sin(ss.theta);
       ydd = ((-Th_n)/ss.m) * sin(ss.theta) + (Th_t/ss.m) * cos(ss.theta);
-      tdd = 0;
+      tdd = -(mdot * ss.thetad * (sys.len - sys.cgX)^2) / ss.I;
 
       % if this.adjustForGrounding
       %   gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);

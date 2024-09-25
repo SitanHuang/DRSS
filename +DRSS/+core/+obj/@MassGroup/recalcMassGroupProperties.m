@@ -34,4 +34,17 @@ function mg = recalcMassGroupProperties(mg)
     end
 
     mg.sideArea = totalSideArea;
+
+    if ~isempty(mg.overriddenCGX)
+        mg.cgX = mg.overriddenCGX;
+    end
+    if ~isempty(mg.overriddenM)
+        mg.m = mg.overriddenM;
+    end
+    if ~isempty(mg.overriddenLen)
+        mg.len = mg.overriddenLen;
+    end
+    if ~isempty(mg.overriddenSideArea)
+        mg.sideArea = mg.overriddenSideArea;
+    end
 end

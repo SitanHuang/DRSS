@@ -12,6 +12,9 @@ classdef RocketAerodynamics < DRSS.core.dynamics.Dynamics
     A_tail
     A_planform
     A_side
+
+    ssm_min = inf
+    ssm_max = -inf
   end
 
   methods
@@ -25,7 +28,7 @@ classdef RocketAerodynamics < DRSS.core.dynamics.Dynamics
       L = sys.len;
 
       this.A = (pi / 4) * meta.D ^ 2; % rocket cross section
-      this.L_body = L - meta.L_nose - meta.L_tail;
+      this.L_body = L - meta.L_nose - meta.L_tail_c - - meta.L_tail_f;
       this.A_body = this.L_body * meta.D; % body section projected side area [m^2]
       this.A_nose = (meta.L_nose * meta.D) / 2*1.2; % approximate nose cone projected side area (triangle) [m^2]
       this.A_tail = meta.L_tail_f * meta.D + (meta.L_tail_c * (meta.D + meta.D_tail)) / 2 + meta.L_tail_rr * meta.D_tail_rr; % boat tail projected side area [m^2]

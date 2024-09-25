@@ -4,7 +4,7 @@ classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
   %   LaunchRail implements the IEventTriggerDynamics abstract class to trigger
   %   other dynamics when rail exit is detected.
   %   LaunchRail also disables itself via setEnabled(false) on detecting
-  %   systemState.t > t_launchRailCleared to avoid interfering with
+  %   systemState.t > t_launchRailButtonCleared to avoid interfering with
   %   systemState.forceConstantTheta with other Dynamics.
 
   properties
@@ -19,12 +19,13 @@ classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
   end
 
   properties (Transient, SetAccess=protected)
-    t_launchRailCleared = inf % [s]
+    t_launchRailButtonCleared = inf % [s]
+    t_launchRailCGCleared = inf % [s]
 
     v_launchRailExit = 0 % [m/s]
 
     launchRailVec % internal use
-    launchRailClearanceVec % internal use
+    launchRailButtonVec % internal use
 
     cg_loc_launchRailExit = [inf, inf]
 
@@ -77,7 +78,7 @@ classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
     function [this, sys, ss0] = resetTransientData(this, sys, ss0)
       [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.IEventTriggerDynamics(this, sys, ss0);
 
-      this.t_launchRailCleared = inf;
+      this.t_launchRailButtonCleared = inf;
       this.v_launchRailExit = 0;
 
       launchRailUnitVec = [
@@ -89,11 +90,11 @@ classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
 
       if this.launchRailExitVelocityMethod == DRSS.core.dynamics.LaunchExitVelocityMethods.RAIL_BUTTON_CROSSES_RAIL_TIP
         % When rail button crosses end of rail:
-        this.launchRailClearanceVec = launchRailUnitVec .* ...
+        this.launchRailButtonVec = launchRailUnitVec .* ...
           (this.launchRailLength - sys.cgX + this.launchRailButtonLoc);
       elseif this.launchRailExitVelocityMethod == DRSS.core.dynamics.LaunchExitVelocityMethods.ROCKET_TIP_CROSSES_RAIL_TIP
         % When tip cross end of rail:
-        this.launchRailClearanceVec = launchRailUnitVec .* ...
+        this.launchRailButtonVec = launchRailUnitVec .* ...
           (this.launchRailLength - sys.cgX);
       else
         error("Unknown LRE calculation method: %s", this.launchRailExitVelocityMethod);
@@ -117,20 +118,26 @@ classdef LaunchRail < DRSS.core.dynamics.IEventTriggerDynamics
     function [this, sys, massChanged]=step(this, sys, ss)
       massChanged = false;
 
-      y_clear = this.launchRailClearanceVec(2);
-      this.isCleared = ss.y > y_clear || ss.t > this.t_launchRailCleared;
+      y_clear = this.launchRailButtonVec(2);
+      this.isCleared = ss.y > y_clear || ss.t > this.t_launchRailButtonCleared;
 
-      ss.forceConstantTheta = ~this.isCleared;
+      cg_clear = this.launchRailVec(2);
+
+      ss.forceConstantTheta = ss.y < cg_clear; % rail support only up to CG = tip of rail, regardless of button loc
+
+      if ss.y > cg_clear
+        this.t_launchRailCGCleared = min(ss.t, this.t_launchRailCGCleared);
+      end
 
       if this.isCleared
         % Rocket CLEARED launch rail
-        if ss.t < this.t_launchRailCleared
-          this.t_launchRailCleared = ss.t;
+        if ss.t < this.t_launchRailButtonCleared
+          this.t_launchRailButtonCleared = ss.t;
           this.v_launchRailExit = sqrt(ss.yd^2 + ss.xd^2);
           this.cg_loc_launchRailExit = [ss.x; ss.y];
 
           this.onEventTrigger(sys, ss);
-        elseif ss.t > this.t_launchRailCleared + this.selfDisablingTimeThreshold
+        elseif ss.t > this.t_launchRailButtonCleared + this.selfDisablingTimeThreshold
           % Disable self
           this.setEnabled(false, sys, ss);
         end
