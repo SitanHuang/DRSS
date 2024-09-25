@@ -22,7 +22,7 @@ ssm = (sys.configParams.rocketDynamics.aerodynamicProfile.CP - sys.cgX) / sys.co
 solver = DRSS.solver.ODE45Solver(sys) ...
   .setCaptureResultantParameters(true) ... % Whether to capture time variant params (i.e., m, mdot, I), which slows down the solver drastically
   .setPrintPerformanceSummary(true) ...
-  .configureODE('RelTol', 1e-6) ... % 1e-3 for prototyping, 1e-8 for reports
+  .configureODE('RelTol', 1e-9) ... % 1e-3 for prototyping, 1e-8 for reports
   .overrideODEFunc(@ode113); % ode113 (2x more space efficient/less frames, run at 1e-9 rel tol), ode45 (default), ode89 (high precision)
 
 [resultantStates, resultantParameters] = solver.solve();
