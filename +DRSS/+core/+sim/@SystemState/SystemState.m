@@ -27,8 +27,8 @@ classdef SystemState < handle
 
     t = []
 
-    prevTime = [] % for internal tracking
-    forceConstantTheta = [] % internal use, tells solver to force thetad=thetadd=0
+    prevTime = inf % for internal tracking
+    forceConstantTheta = false % internal use, tells solver to force thetad=thetadd=0
 
     % runtime, transient, internal use:
 
@@ -62,6 +62,55 @@ classdef SystemState < handle
 
       [this.airDensity, this.airTemp, this.airPressure, this.airDynViscosity] = ...
         DRSS.legacy.atmosphere(this.y, T0, p0, R, B, g0);
+    end
+
+    function newState = interpolate(this, new_t)
+      % INTERPOLATE - Interpolate the SystemState attributes to new time points
+      % new_t: Vector of new time points
+      % Returns a new SystemState object with interpolated attributes
+
+      newState = DRSS.core.sim.SystemState();
+
+      newState.t = new_t;
+
+      ignoreProperties = {'prevTime', 'forceConstantTheta', 'windSpeed', ...
+        'airDensity', 'airTemp', 'airPressure', 'airDynViscosity', ...
+        'massChanged', 'terminate'};
+
+      propList = properties(this);
+
+      for i = 1:length(propList)
+        propName = propList{i};
+
+        if ismember(propName, ignoreProperties)
+          continue;
+        end
+
+        propValue = this.(propName);
+
+        if isempty(propValue)
+          continue; % Skip if empty
+        end
+
+        % For 'params' property, copy directly
+        if strcmp(propName, 'params')
+          newState.params = this.params;
+          continue;
+        end
+
+        % Check if the property is numeric and can be interpolated
+        if isnumeric(propValue)
+          % If the size matches with the original time vector
+          if length(this.t) == size(propValue, 1)
+            % Perform interpolation
+            interpolatedValue = interp1(this.t, propValue, new_t, 'linear');
+            % Assign the interpolated value to the new object
+            newState.(propName) = interpolatedValue;
+          else
+            continue;
+          end
+        end
+      end
     end
 
     function copy = makeShallowCopy(this)

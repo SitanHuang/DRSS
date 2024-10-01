@@ -1,9 +1,10 @@
-classdef ODE45Solver < DRSS.solver.Solver
-  % ODE45SOLVER A Runge-Kutta solver for a given System object.
+classdef MatlabODESolver < DRSS.solver.Solver
+  % MatlabODESolver An ODE solver for a given System object using MATLAB's
+  %   built-in ode suites.
   %
   %   Example:
   %       % Create an instance of the solver
-  %       solver = DRSS.solver.ODE45Solver();
+  %       solver = DRSS.solver.MatlabODESolver();
   %
   %       % Configure the solver
   %       solver
@@ -14,7 +15,7 @@ classdef ODE45Solver < DRSS.solver.Solver
   %       % Run the solver
   %       [states, timeVariantParams] = solver.solve();
   %
-  %   See also: odeset, ode45, DRSS.core.sim.System
+  %   See also: odeset, ode113, ode45, DRSS.core.sim.System
 
   % Configs
   properties
@@ -37,13 +38,13 @@ classdef ODE45Solver < DRSS.solver.Solver
     %   computation as MATLAB doesn't need to iterate to decrease it further
     %
     %   By using overrideODEFunc and setting the solver method to other than
-    %   ode45 (default), RelTol can be increased without performance / memory
-    %   costs. Anecdotally, using ode113 at 1e-9 tolerance is great for both
+    %   ode45/ode89, RelTol can be increased without performance / memory costs.
+    %   Anecdotally, using ode113 at 1e-9 tolerance is great for both
     %   performance & accuracy.
     %
     ODEOptions = odeset( ...
       'InitialStep', 0.001, ...
-      'RelTol', 1e-3, ...
+      'RelTol', 1e-6, ...
       'MaxStep', 0.1 ...
     )
 
@@ -59,13 +60,13 @@ classdef ODE45Solver < DRSS.solver.Solver
     % PERFORMANCESUMMARY Flag to print performance summary after solving.
     %
     %   Default: true
-    performanceSummary = false
+    performanceSummary = true
 
     % DEBUGFLAG Flag to enable debug mode for verbose, step-by-step integration output.
     debugFlag = false
 
     % Use ODE
-    odeFunc=@ode45
+    odeFunc=@ode113
   end
 
   % Abstraction Methods
@@ -234,7 +235,7 @@ classdef ODE45Solver < DRSS.solver.Solver
       approxMemorySize = whos('states');
       approxMemorySize = approxMemorySize.bytes;
 
-      fprintf('# ODE45Solver Performance Summary\n');
+      fprintf('# MatlabODESolver Performance Summary\n');
       fprintf('  Simulation Time: %.3f sec, %.1f ms per frame, %.1f sims per min\n', simulationTime, simulationTime / framesTotal * 1e3, 1 / simulationTime * 60);
       fprintf('  Time Step: %d s (min) - %.3f ms (max)\n', minTimeStep, maxTimeStep * 1e3);
       fprintf('  Time Span: %.3f s - %.3f s\n', min(times), max(times));

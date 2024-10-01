@@ -44,5 +44,6 @@ sys.configParams.rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   'l_fin', l_fin, ... length to foremost tip of fins fins from tip of nose cone
   'N_fins', 4, ... number of fins
   'CDr', 0.5, ... hardcoded rocket CD
-  'CP', 47.161 * uc.in_to_m ... hardcoded CP
+  'CP', 67.161 * uc.in_to_m ... hardcoded CP
+  ... 'CP', 47.161 * uc.in_to_m ... hardcoded CP
 );

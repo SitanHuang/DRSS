@@ -6,7 +6,7 @@ classdef MassGroup < DRSS.core.obj.Mass
     massList = []
   end
 
-  properties
+  properties (Access=protected)
     overriddenCGX = []
     overriddenM = []
     overriddenLen = []
