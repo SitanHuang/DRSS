@@ -27,7 +27,7 @@
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/DRSS.git
+   git clone https://github.com/SitanHuang/DRSS.git
    ```
 
 2. **Add to MATLAB Path**
