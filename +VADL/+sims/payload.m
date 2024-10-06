@@ -72,3 +72,16 @@ plot(resultantParameters.t(1:end-5), resultantParameters.equivForceY(1:end-5));
 ylabel('Force Y, N')
 
 xline(parachute.t_complete, 'Label', 't_{fill}');
+%% Plot acc z
+plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t));
+ylabel('Vertical acc, m/s^2')
+hold on;
+xlim([0 6]);
+
+%% Compare with drop test
+dropTestData = readtable("Drop Tests\datalog.csv");
+
+dropTestData.time = dropTestData.time - dropTestData.time(56007);
+
+plot(dropTestData.time(56007:end), dropTestData.accelZ(56007:end));
+xlim([0 6]);

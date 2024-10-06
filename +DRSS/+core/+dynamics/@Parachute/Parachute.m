@@ -18,6 +18,8 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
     t_complete = inf % time at deployment complete [s]
 
     t_fill = inf % parachute filling time [s]
+
+    t_fill_measure_time = inf
   end
 
   methods
@@ -56,6 +58,12 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
         return;
       end
 
+      if ss.t <= this.t_fill_measure_time
+        this.t_fill_measure_time = ss.t;
+        this.t_fill = this.n * this.diameter / abs(sqrt(ss.yd^2 + ss.xd^2));
+        this.t_complete = this.t_deploy + this.t_fill;
+      end
+
       [CD, CD_side, CL_side, S, S_side, ~] = DRSS.legacy.parachute_state( ...
         tElapsed, this.t_fill, ...
         this.diameter, ...
@@ -89,8 +97,6 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
 
       this.t_enabled = min(this.t_enabled, ss.t);
       this.t_deploy = min(this.t_deploy, this.t_enabled + this.deploymentTimeDelay);
-      this.t_fill = this.n * this.diameter / abs(sqrt(ss.yd^2 + ss.xd^2));
-      this.t_complete = this.t_deploy + this.t_fill;
     end
   end
 end
