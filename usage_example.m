@@ -109,22 +109,6 @@ main = DRSS.core.dynamics.Parachute() ...
 % reference area for vertical drag calculations
 Ar = (rocketDynamics.A + rocketDynamics.A_side) / 2; % take average of frontal and side projected areas
 CDr = (1.42 * 1.41 * A_fin + 0.56 * (rocketDynamics.A_side)) / rocketDynamics.A;
-% Ar = 0.181;
-% CDr = 11.9188;
-
-% Legacy drogue:
-% Ar = 0.1810
-% A = 0.0190 (same as DRSS)
-% Ar_side = 0.3430
-% CDr = 11.9188
-% A_fin = 0.0172
-% Ar_side = 0.3430
-% FDr(ii) = 0.5*rho(ii)*CDr*A*v_inf_z(ii)^2;
-% FDr_side(ii) = 0.5*rho(ii)*CDr_side*Ar_side*v_inf_x(ii)^2;
-% Legacy Main:
-% CDr = CDr_original;
-% FDr(ii) = 0.5*rho(ii)*CDr*Ar*v_inf_z(ii)^2;
-% FDr_side(ii) = 0.5*rho(ii)*CDr_side*Ar_side*v_inf_x(ii)^2;
 
 rocketDescentDrag = DRSS.core.dynamics.SimpleDrag() ...
   .setArea(rocketDynamics.A) ...
@@ -172,9 +156,8 @@ mainDeploymentListener.trigger(jettisonListener);
 
 %% Simulate Rocket Ascent
 
-% System must be the top level MassGroup to calculate
-% correctly the sectional moments of inertia; this is
-% because non-System MassGroups calculate moments of
+% System must be the top level MassGroup to calculate correctly the sectional
+% moments of inertia; this is because non-System MassGroups calculate moments of
 % inertia by assuming homogenous distribution in length
 sys = sys ...
   .subjectTo(gravityDynamics) ...
@@ -204,36 +187,6 @@ solver = DRSS.solver.MatlabODESolver(sys) ...
 % solver.setTimeSpan([0 0.5]);
 
 [resultantStates, resultantParameters] = solver.solve();
-
-%% WIP; Debug & dev only:
-
-% sys.momentOfInertia()
-% L1400 legacy code: I0=7.4177; DRSS: 7.1587
-
-% plot(resultantStates.t, gradient(resultantStates.yd, resultantStates.t), '-o')
-% plot(resultantStates.t, resultantStates.y .* uc.m_to_ft)
-plot(resultantStates.x .* uc.m_to_ft, resultantStates.y .* uc.m_to_ft); xlim([-500 4000])
-% plot(resultantStates.t, rad2deg(resultantStates.theta), '-o')
-% plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm)
-% plot(resultantParameters.t, resultantParameters.I)
-% plot(resultantParameters.t, resultantParameters.equivForceY, '-o')
-% xlim([0 0.1])
-
-% plot([0 launchRailDynamics.launchRailButtonVec(1)],[0 launchRailDynamics.launchRailButtonVec(2)], 'r-', 'LineWidth', 3)
-hold on
-% plot([0 launchRailDynamics.launchRailVec(1)],[0 launchRailDynamics.launchRailVec(2)], 'k-', 'LineWidth', 4)
-% % plot(resultantStates.x, resultantStates.y, 'o-')
-% xline(launchRailDynamics.systemStateAtTrigger.x .* uc.m_to_ft);
-xline(apogeeListener.systemStateAtTrigger.x .* uc.m_to_ft);
-% xline(mainDeploymentListener.systemStateAtTrigger.x .* uc.m_to_ft);
-% xline(main.t_deploy);
-% xline(main.t_complete);
-% xline(jettisonListener.t_trigger);
-% scatter(launchRailDynamics.cg_loc_launchRailExit(1), launchRailDynamics.cg_loc_launchRailExit(2), 20)
-
-% disp(launchRailDynamics.launchRailButtonVec)
-
-% DRSS: clears rail at CG=[0.3393, 3.8782]; Legacy: CG=[0.3051, 3.4875]
 
 fprintf("Apogee: %.3f ft\n", max(resultantStates.y) .* uc.m_to_ft);
 fprintf("LRE: %.3f fps\n", launchRailDynamics.v_launchRailExit .* uc.mps_to_fps);

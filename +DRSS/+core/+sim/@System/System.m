@@ -18,7 +18,7 @@ classdef System < DRSS.core.obj.MassGroup
     IAarray = {}
 
     % Launch site elevation above mean sea level [m]
-    launchSiteElevation = 0
+    launchSiteElevation = 240
     % launch site air temperature [C]
     launchSiteTemp = 26.67;
     % launch site pressure [Pa]

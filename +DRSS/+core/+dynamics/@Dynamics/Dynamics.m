@@ -17,18 +17,6 @@ classdef Dynamics < handle
   end
 
   methods
-    function [this, val, sys, ss] = setEnabled(this, val, sys, ss)
-      % Internal use only
-      this.enabled = val;
-
-      if val
-        this.t_lastEnable = ss.t;
-        this.onEnable(sys, ss);
-      else
-        this.t_lastDisable = ss.t;
-      end
-    end
-
     function [this, sys, sysState0] = resetTransientData(this, sys, sysState0)
       % RESETTRANSIENTDATA The callback function to run between simulations
       %   since the Dynamics obj is a handle and may be reused in different
@@ -39,7 +27,7 @@ classdef Dynamics < handle
     function [dyn, sys, massChanged]=step(dyn, sys, sysState)
       % STEP callback on every integration step run once for each Dynamics in
       %   a system per step (useful for prepping values used in other funcs)
-      %   and before resolve functions are run
+      %   and before any resolve functions are run
       %
       %  The System passed via the sys argument contains systemState up to but
       %  does not include the current step.
@@ -59,10 +47,8 @@ classdef Dynamics < handle
       %
       %   IMPORTANT!!!: The outputs must consider that the time in sysState may
       %   be non-monotonic. Modification of data in sys obj is allowed only if
-      %   the modification process is not order dependent & reproducible via the
-      %   sysState obj. Setting a marker in the sys obj or this dynamic obj is
-      %   allowed as as long as it tries to recognize something that happened in
-      %   the past.
+      %   the modification process is not order dependent, and is reproducible
+      %   via the sysState obj alone.
 
       terminate = false;
       xdd = 0;
@@ -82,6 +68,19 @@ classdef Dynamics < handle
       ydd = 0;
       tdd = 0;
       mdot = 0;
+    end
+
+
+    function [this, val, sys, ss] = setEnabled(this, val, sys, ss)
+      % Internal use only
+      this.enabled = val;
+
+      if val
+        this.t_lastEnable = ss.t;
+        this.onEnable(sys, ss);
+      else
+        this.t_lastDisable = ss.t;
+      end
     end
   end
 
