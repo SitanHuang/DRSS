@@ -224,6 +224,14 @@ classdef MatlabODESolver < DRSS.solver.Solver
           resultantParameters.(propName) = resultantParameters.(propName)(keepIndices);
         end
       end
+
+      fn = fieldnames(resultantParameters.params);
+      for k = 1:numel(fn)
+        val = resultantParameters.params.(fn{k});
+        if isnumeric(val)
+          resultantParameters.params.(fn{k}) = resultantParameters.params.(fn{k})(keepIndices);
+        end
+      end
     end
 
     function printPerformanceSummary(this, simulationTime, times, states, resultantParameters)

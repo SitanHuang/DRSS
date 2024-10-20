@@ -50,7 +50,7 @@ function this=initialize(this, inputs)
       % 's_foil',     'Aux airfoil fins semispan [m]'
       % A = (pi / 4) * D^2 + A_nacelle_projected*n_nacelle
       % 'A',          'Rocket cross-sectional area [m^2]'
-      'CDr',        'Reference drag coefficient [1]'
+      'CDr',        'Drag coefficient override [1]. Use 0 for parameter-based calculations'
       'CP',         'Constant rocket CP location [m]'
     };
 

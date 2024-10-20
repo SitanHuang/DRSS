@@ -10,6 +10,7 @@ unitConv.m_to_in = 1/unitConv.in_to_m;
 unitConv.m_to_ft = 3.28084;
 unitConv.m2_to_ft2 = unitConv.m_to_ft^2;
 unitConv.lbm_to_kg = 0.453592;
+unitConv.oz_to_kg = 0.02835;
 unitConv.kg_to_lbm = 1/unitConv.lbm_to_kg;
 unitConv.rad_to_deg = 57.2958;
 unitConv.deg_to_rad = 1/unitConv.rad_to_deg;

@@ -4,7 +4,8 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
 
   systemState = system.systemState ...
     .fromStateVec(t, states) ...
-    .recalculateAirWindProperties(system);
+    .recalculateAirWindProperties(system) ...
+    .recreateParamsStruct();
 
   if this.debugFlag
     fprintf('# integrationStep: t=%.9f, xdd=%.2f, ydd=%.2f, tdd=%.2f, forceConstantTheta=%i\n', t, systemState.xdd, systemState.ydd, systemState.thetadd, systemState.forceConstantTheta);
@@ -119,6 +120,17 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
     resultantParameters.I(end + 1) = systemState.I;
     resultantParameters.equivForceX(end + 1) = systemState.xdd * systemState.m;
     resultantParameters.equivForceY(end + 1) = systemState.ydd * systemState.m;
+
+    fn = fieldnames(systemState.params);
+    for k = 1:numel(fn)
+      val = systemState.params.(fn{k});
+      if isnumeric(val)
+        if ~isfield(resultantParameters.params, fn{k})
+          resultantParameters.params.(fn{k}) = [];
+        end
+        resultantParameters.params.(fn{k})(end + 1) = val;
+      end
+    end
   end
 
   dsdt = systemState.toStateVecDeriv();

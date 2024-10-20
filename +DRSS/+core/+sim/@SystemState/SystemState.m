@@ -23,7 +23,8 @@ classdef SystemState < handle
     equivForceX = [];
     equivForceY = [];
 
-    params % extra system params
+    params = struct; % extra system params
+    paramsTemplate = struct;
 
     t = []
 
@@ -45,7 +46,15 @@ classdef SystemState < handle
 
   methods
     function this = SystemState()
-      this.params = containers.Map();
+      % this.params = containers.Map();
+    end
+
+    function this = declareCustomParam(this, paramName)
+      this.paramsTemplate.(paramName) = nan;
+    end
+
+    function this = recreateParamsStruct(this)
+      this.params = this.paramsTemplate;
     end
 
     function this = recalculateAirWindProperties(this, sys)
