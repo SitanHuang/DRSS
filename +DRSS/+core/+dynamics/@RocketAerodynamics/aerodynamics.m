@@ -128,7 +128,11 @@ function [CA,CN,CD,CL,CP] = aerodynamics(Re,v,alpha,cm,D,L,L_nose,L_body,A_planf
 
     % override drag coefficient
     if CD_override
-        CD = CDr;% * (alpha * (.3 / .2967) + 1);
+        % Pre Sitan Huang:
+        % CD = CDr; % * (alpha * (.3 / .2967) + 1);
+
+        % Sitan Huang's modifications:
+        CD = CDr * (alpha * (.3 / .2967) + 1) / sqrt(1 - min(0.8, M_inf)^2);
         %fprintf("Warning: possibly inaccurate model used. Check CD \n");
     end
 

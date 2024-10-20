@@ -143,6 +143,10 @@ classdef MatlabODESolver < DRSS.solver.Solver
 
       resultantStates = DRSS.core.sim.SystemState.fromSolvedStateVec(times, states);
 
+      resultantStates.xdd = gradient(resultantStates.xd, resultantStates.t);
+      resultantStates.ydd = gradient(resultantStates.yd, resultantStates.t);
+      resultantStates.thetadd = gradient(resultantStates.thetad, resultantStates.t);
+
       % Remove non-monotonic entries in resultantParameters (i.e., m & I)
       resultantParameters = this.cleanupResultantParameters(resultantParameters);
 

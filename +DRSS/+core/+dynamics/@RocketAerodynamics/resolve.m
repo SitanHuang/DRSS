@@ -75,6 +75,7 @@ function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
   this.cp_calc_min = min(this.cp_calc_min, CP);
 
   ss.params.CDr = CD;
+  ss.params.CAr = CA;
   ss.params.SSM = ssm;
 
   % LEGACY CODE:
