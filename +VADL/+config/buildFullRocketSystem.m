@@ -23,3 +23,5 @@ sys = sys ...
 
 % Calculate geometry based on system length with massing now available:
 sys.configParams.rocketDynamics.recalcTransientParameters(sys);
+
+sys.configParams.ssm = (sys.configParams.rocketDynamics.aerodynamicProfile.CP - sys.cgX) / sys.configParams.rocketDynamics.aerodynamicProfile.D;
