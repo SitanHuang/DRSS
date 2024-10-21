@@ -3,6 +3,12 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     % the MassGroup representing the motor, bound and controlled by Motor dynamics
     motorMassGroup
 
+
+    % The offset of generated motor mass towards the end of rocket in meters.
+    %
+    % Default: 1 in = 0.0254 m
+    motorOffset = 0.0254 % [m]
+
     % % only output force when thrust is known to completely replace the
     % % normal force; reduces jitter but may have performance implications;
     % % on the other hand, jitter may increase the number of frames ODE45
@@ -39,6 +45,10 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       this.t0 = t0;
     end
 
+    function this = setMotorOffset(this, motorOffset)
+      this.motorOffset = motorOffset;
+    end
+
     function mg = genMotorMass(this)
       % GENMOTORMASS Generates a MassGroup representing the motor with an offset
       %   equaling -(length of motor); also binds the motor mass to this Motor dynamics
@@ -50,7 +60,7 @@ classdef Motor < DRSS.core.dynamics.Dynamics
         .overrideLen(this.motor_params.L) ...
         .overrideCGX(this.motor_params.L / 2) ...
         .overrideM(this.motor_params.m0 + this.motor_params.m_prop0) ...
-        .setOffset(-this.motor_params.L) ...
+        .setOffset(-this.motor_params.L + this.motorOffset) ...
         .setInertialGeometry(struct('R', this.motor_params.D / 2)) ...
         .setMomentOfInertiaMethod(DRSS.core.obj.MomentOfInertiaMethod.SolidCylinderApproximation) ...
         .lockGeometry();
