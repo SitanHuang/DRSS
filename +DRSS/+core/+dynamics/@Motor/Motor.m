@@ -9,6 +9,10 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     % Default: 1 in = 0.0254 m
     motorOffset = 0.0254 % [m]
 
+    % The amount of thrust lost due to unaccounted, non-idealistic factors (ex.
+    % guide rail friction, wobbly rocket body, or poor motor specs)
+    lossFactor = 1
+
     % % only output force when thrust is known to completely replace the
     % % normal force; reduces jitter but may have performance implications;
     % % on the other hand, jitter may increase the number of frames ODE45
@@ -38,7 +42,11 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     end
 
     function this = setAdjustForGrounding(this, val)
-        this.adjustForGrounding = val;
+      this.adjustForGrounding = val;
+    end
+
+    function this = setLossFactor(this, val)
+      this.lossFactor = val;
     end
 
     function this = setIgnitionTimestamp(this, t0)
@@ -170,6 +178,8 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       m_motor = this.motor_params.m0 + this.motor_params.m_prop0 + m_prop;
 
       this.motorMassGroup.overrideM(m_motor);
+
+      Th = Th * this.lossFactor;
     end
   end
 end
