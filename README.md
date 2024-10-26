@@ -42,6 +42,15 @@ Note: The `+VADL` folder contains modules specific to the Vanderbilt Aerospace D
 ## Architecture
 DRSS is object-oriented and provides plug-and-play abstraction over the physical components, events and dynamics of a rocket system.
 
+### Guidance for Advanced Usage
+It is ergonomical to implement custom behaviors in DRSS. Consult in-line documentation below:
+
+- [Solver mechanics](./+DRSS/+solver/@MatlabODESolver/MatlabODESolver.m)
+- [Implementing custom dynamics](./+DRSS/+core/+dynamics/@Dynamics/Dynamics.m)
+- [Implementing custom events](./+DRSS/+core/+dynamics/@IEventTriggerDynamics/IEventTriggerDynamics.m)
+
+Additionally, the [built-in dynamics objects](./+DRSS/+core/+dynamics/) serve as good examples.
+
 ### Core Components
 
 - A **[`System`](./+DRSS/+core/+sim/@System/System.m)** is a special [`MassGroup`](./+DRSS/+core/+obj/@MassGroup/MassGroup.m) that represents a 3 Degree-of-Freedom point mass that is subject to certain dynamics and holds [states data](./+DRSS/+core/+sim/@SystemState/SystemState.m) in the time domain. It serves as the root container for all other components, including masses, dynamics, and events. It can be the actual rocket, a rocket stage, or a jettisioned payload.

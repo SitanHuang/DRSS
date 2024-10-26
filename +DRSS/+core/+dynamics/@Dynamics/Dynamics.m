@@ -1,4 +1,13 @@
 classdef Dynamics < handle
+  % DYNAMICS The superclass of all Dynamics objects that has the ability to
+  %   modify the instantaneous SystemState of a System object as well as the
+  %   System itself.
+  %
+  %   See DRSS.solver.MatlabODESolver.integrationStep for how Dynamics objects
+  %     are evaluated during runtime.
+  %
+  %   See also: DRSS.core.sim.SystemState, DRSS.core.sim.System
+
   properties
     enabledOnInit = true;  % Flag to enable or disable the dynamics on init
   end
