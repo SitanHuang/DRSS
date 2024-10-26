@@ -9,8 +9,8 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     % Default: 1 in = 0.0254 m
     motorOffset = 0.0254 % [m]
 
-    % The amount of thrust lost due to unaccounted, non-idealistic factors (ex.
-    % guide rail friction, wobbly rocket body, or poor motor specs)
+    % The amount of thrust retained after accounting for non-idealistic factors
+    % (ex. guide rail friction, wobbly rocket body, or poor motor specs)
     lossFactor = 1
 
     % % only output force when thrust is known to completely replace the
