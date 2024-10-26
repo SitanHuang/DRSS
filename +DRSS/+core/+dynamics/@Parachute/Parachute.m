@@ -58,9 +58,12 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
         return;
       end
 
+      v_inf_x = -(ss.windSpeed) - ss.xd;
+      v_inf_y = -ss.yd;
+
       if ss.t <= this.t_fill_measure_time
         this.t_fill_measure_time = ss.t;
-        this.t_fill = this.n * this.diameter / abs(sqrt(ss.yd^2 + ss.xd^2));
+        this.t_fill = this.n * this.diameter / sqrt(v_inf_y^2 + v_inf_x^2);
         this.t_complete = this.t_deploy + this.t_fill;
       end
 
@@ -68,17 +71,28 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
         tElapsed, this.t_fill, ...
         this.diameter, ...
         this.CD, this.CD_side, this.CL_side, ...
-        'projected', 'f');
+        'projected', 'e'); %#ok<PROPLC>
+      % ^ Exponential model seems to match parachute jerk very well against real
+      %   flight data; legacy codebase uses fourth-order (everyone was afraid to
+      %   change or something) but that has been bullshit for many years against
+      %   real data before me (Sitan Huang), and gives ridiculously low opening Gs
 
       rho = ss.airDensity;
 
-      v_inf_x = -(ss.windSpeed) - ss.xd;
-      v_inf_y = -ss.yd;
+      % % Fourth-order model:
+      % t_f = 4 * this.t_fill;
+
+      % Apf = pi * this.diameter^2 / 4;
+
+      % x = min(tElapsed / t_f, 1);
+
+      % CdpAp = Apf * (x^2 + (this.CD - 1)*x^4);
 
       % aerodynamic forces
-      FD = 0.5 * rho * CD * S * v_inf_y^2;
-      FL = 0.5 * rho * CL_side * S_side * v_inf_x^2;
-      FD_side = 0.5 * rho * CD_side * S_side * v_inf_x^2;
+      FD = 0.5 * rho * CD * S * v_inf_y^2;  %#ok<PROPLC>
+      % FD = 0.5 * rho * CdpAp * v_inf_y^2;
+      FL = 0.5 * rho * CL_side * S_side * v_inf_x^2;  %#ok<PROPLC>
+      FD_side = 0.5 * rho * CD_side * S_side * v_inf_x^2;  %#ok<PROPLC>
 
       % accelerations
       xdd = (FD_side) / ss.m;
