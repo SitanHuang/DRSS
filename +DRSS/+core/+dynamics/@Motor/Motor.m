@@ -86,6 +86,12 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       this.motorMassGroup = massGroup;
     end
 
+    function [this, sys, ss0] = resetTransientData(this, sys, ss0)
+      [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.Dynamics(this, sys, ss0);
+
+      ss0.declareCustomParam("ThrustToWeight");
+    end
+
     function [this, sys, massChanged]=step(this, sys, ss)
       % calculates thrust & updates motor MassGroup:
       [thrust, mdot] = this.motor_update_state(ss);
@@ -120,6 +126,8 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       xdd = (Th_n/ss.m) * cos(ss.theta) + (Th_t/ss.m) * sin(ss.theta);
       ydd = ((-Th_n)/ss.m) * sin(ss.theta) + (Th_t/ss.m) * cos(ss.theta);
       tdd = -(mdot * ss.thetad * (sys.len - sys.cgX)^2) / ss.I;
+
+      ss.params.ThrustToWeight = thrust / 9.8 / ss.m; % TODO: should use variable gravity
 
       % if this.adjustForGrounding
       %   gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);
