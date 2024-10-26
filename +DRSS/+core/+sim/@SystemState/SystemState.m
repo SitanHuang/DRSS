@@ -44,9 +44,20 @@ classdef SystemState < handle
     terminate = false % set during runtime to true terminates integration
   end
 
+  properties (Dependent, SetAccess=protected)
+    accelMag
+  end
+
   methods
     function this = SystemState()
       % this.params = containers.Map();
+    end
+
+    function accMag = get.accelMag(this)
+      accMag = (this.xdd.^2 + this.ydd.^2).^(1/2);
+    end
+    function set.accelMag(~, ~)
+      % ignored
     end
 
     function this = declareCustomParam(this, paramName)

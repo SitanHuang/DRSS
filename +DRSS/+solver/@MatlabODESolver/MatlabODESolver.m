@@ -59,8 +59,8 @@ classdef MatlabODESolver < DRSS.solver.Solver
 
     % PERFORMANCESUMMARY Flag to print performance summary after solving.
     %
-    %   Default: true
-    performanceSummary = true
+    %   Default: false
+    performanceSummary = false
 
     % DEBUGFLAG Flag to enable debug mode for verbose, step-by-step integration output.
     debugFlag = false
