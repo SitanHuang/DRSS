@@ -8,6 +8,8 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
     CL_side = 0.36465 % parachute side lift coefficient (from CFD)
 
     deploymentTimeDelay = 0; % deployment time offset after t_enabled [s]
+
+    openingModel DRSS.core.dynamics.ParachuteOpeningModel = DRSS.core.dynamics.ParachuteOpeningModel.EXPONENTIAL;
   end
 
   properties (Transient, SetAccess=protected)
@@ -41,6 +43,9 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
     function this = setDeploymentTimeDelay(this, val)
       this.deploymentTimeDelay = val;
     end
+    function this = setOpeningModel(this, val)
+      this.openingModel = val;
+    end
   end
 
   methods
@@ -67,11 +72,19 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
         this.t_complete = this.t_deploy + this.t_fill;
       end
 
+      modelFlag = 'f';
+
+      if this.openingModel == DRSS.core.dynamics.ParachuteOpeningModel.EXPONENTIAL
+        modelFlag = 'e';
+      elseif this.openingModel ~= DRSS.core.dynamics.ParachuteOpeningModel.FOURTH_ORDER
+        error("Unknown parachute opening model selected: %s", this.openingModel);
+      end
+
       [CD, CD_side, CL_side, S, S_side, ~] = DRSS.legacy.parachute_state( ...
         tElapsed, this.t_fill, ...
         this.diameter, ...
         this.CD, this.CD_side, this.CL_side, ...
-        'projected', 'e'); %#ok<PROPLC>
+        'projected', modelFlag); %#ok<PROPLC>
       % ^ Exponential model seems to match parachute jerk very well against real
       %   flight data; legacy codebase uses fourth-order (everyone was afraid to
       %   change or something) but that has been bullshit for many years against
