@@ -1,4 +1,10 @@
 classdef IEventTriggerDynamics < DRSS.core.dynamics.Dynamics
+  % IEVENTTRIGGERDYNAMICS The interface class to implement listeners and
+  %   triggers as well as helper functions for event-driven behaviors.
+  %
+  %   Example: DRSS.core.dynamics.events.Apogee
+  %
+
   properties
     % Dynamics to enable/disable
     boundDynamics = [];
@@ -12,6 +18,11 @@ classdef IEventTriggerDynamics < DRSS.core.dynamics.Dynamics
 
     % Whether to disable or enable the list of bound Dynamics on trigger
     disableBoundDynamicsOnTrigger = false;
+  end
+
+  methods (Abstract, Access=protected)
+    % To be implemented by subclasses to define the event condition
+    occurred = evaluateEvent(this, ss);
   end
 
   methods
@@ -49,11 +60,6 @@ classdef IEventTriggerDynamics < DRSS.core.dynamics.Dynamics
         end
       end
     end
-  end
-
-  methods (Abstract, Access=protected)
-    % To be implemented by subclasses to define the event condition
-    occurred = evaluateEvent(this, ss);
   end
 
   methods (Access = protected)
