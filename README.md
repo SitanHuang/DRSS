@@ -45,9 +45,9 @@ DRSS is object-oriented and provides plug-and-play abstraction over the physical
 ### Guidance for Advanced Usage
 It is ergonomical to implement custom behaviors in DRSS. Consult in-line documentation below:
 
-- [Solver mechanics](./+DRSS/+solver/@MatlabODESolver/MatlabODESolver.m)
 - [Implementing custom dynamics](./+DRSS/+core/+dynamics/@Dynamics/Dynamics.m)
 - [Implementing custom events](./+DRSS/+core/+dynamics/@IEventTriggerDynamics/IEventTriggerDynamics.m)
+- [Solver mechanics](./+DRSS/+solver/@MatlabODESolver/MatlabODESolver.m)
 
 Additionally, the [built-in dynamics objects](./+DRSS/+core/+dynamics/) serve as good examples.
 
