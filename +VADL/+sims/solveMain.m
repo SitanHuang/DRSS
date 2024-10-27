@@ -11,6 +11,8 @@ sys = VADL.config.getMainSys();
 
 %% Solve
 solver = DRSS.solver.MatlabODESolver(sys) ...
-  .setCaptureResultantParameters(true);
+  .setCaptureResultantParameters(true) ...
+  .configureODE('RelTol', 1e-9, 'AbsTol', 1e-10) ...
+  .overrideODEFunc(@ode113);
 
 [resultantStates, resultantParameters] = solver.solve();

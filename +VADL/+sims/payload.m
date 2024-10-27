@@ -1,29 +1,41 @@
+function [sys, resultantStates, resultantParameters] = payload(mainSys, resultantStates)
+
 %% Grab conditions at jettison
 
+% clear;
+
 uc = DRSS.util.unitConv;
+% 
+% [resultantStates, ~, mainSys] = VADL.sims.solveMain();
+% 
+% apogeeState = mainSys.configParams.apogeeListener.systemStateAtTrigger;
 
-[resultantStates, ~, mainSys] = VADL.sims.solveMain();
-
-jettisonState = resultantStates.interpolate(mainSys.configParams.jettisonListener.t_trigger - 0.05);
+jettisonState = resultantStates.interpolate(mainSys.configParams.jettisonListener.t_trigger - 0.1);
 jettisonState.t = 0;
 
 % Override as needed:
-jettisonState.xd = -8 / uc.mps_to_fps;
+% jettisonState.xd = -8 / uc.mps_to_fps;
 
 % Legacy: 18.45, DRSS: 18.17
 fprintf("Main descent speed: %.2f fps\n", -jettisonState.yd * uc.mps_to_fps);
+fprintf("Main descent time: %.3f s\n", resultantStates.t(end) - mainSys.configParams.apogeeListener.t_trigger);
 fprintf("Rocket final speed: z=%.2f fps, x=%.2f fps\n", resultantStates.yd(end) * uc.mps_to_fps, resultantStates.xd(end) * uc.mps_to_fps);
 
 %% Construct payload system
 
-sys = DRSS.core.sim.System().overrideM(3.5 * uc.lbm_to_kg);
+sys = DRSS.core.sim.System().overrideM(6.936 * uc.lbm_to_kg);
 
 % Payload Parachute
 parachute = DRSS.core.dynamics.Parachute() ...
       .setDiameter(4 * 12 * uc.in_to_m) ...
       .setCD(2.2) ...
       .setN(9) ... (toroidal = 9, elliptical = 8)
-      .setEnabledOnInit(true);
+      .setEnabledOnInit(false);
+
+% Shockcord Travel
+shockCordTravel = DRSS.core.dynamics.events.Altitude() ...
+  .setAlitude(mainSys.configParams.jettisonAltitude - (50 .* uc.ft_to_m)) ...
+  .trigger(parachute);
 
 % Payload Drag
 
@@ -36,10 +48,11 @@ payloadDrag = DRSS.core.dynamics.SimpleDrag() ...
 sys ...
   .setSystemState(jettisonState.makeShallowCopy()) ...
   .setLaunchSiteElevation(800 * uc.ft_to_m) ...
-  .setLaunchSiteWindSpeed(8 * uc.mph_to_mps) ...
+  .setLaunchSiteWindSpeed(mainSys.configParams.windSpeed * uc.mph_to_mps) ...
   .subjectTo( ...
     DRSS.core.dynamics.Gravity() ...
       .setTerminateOnGrounding(true)) ...
+  .subjectTo(shockCordTravel) ...
   .subjectTo(parachute) ...
   .subjectTo(payloadDrag);
 
@@ -54,8 +67,16 @@ forceZ = gradient(resultantStates.yd(1:(end-5)), resultantStates.t(1:(end-5)));
 fprintf("Payload max speed: z=%.2f fps\n", max(-resultantStates.yd) * uc.mps_to_fps);
 fprintf("Payload final speed: z=%.2f fps, x=%.2f fps\n", resultantStates.yd(end) * uc.mps_to_fps, resultantStates.xd(end) * uc.mps_to_fps);
 fprintf("Payload drift: %.2f ft\n", (resultantStates.x(end) - resultantStates.x(1)) * uc.m_to_ft);
+apogeeState = mainSys.configParams.apogeeListener.systemStateAtTrigger;
+fprintf("Payload drift from apogee: %.2f ft\n", (resultantStates.x(end) - apogeeState.x) * uc.m_to_ft);
+fprintf("Payload drift from pad: %.2f ft\n", resultantStates.x(end) * uc.m_to_ft);
 fprintf("Payload max G: %.2f\n", max(forceZ) / 9.8);
+fprintf("Payload descent time: %.2f s\n", resultantStates.t(end) - resultantStates.t(1));
+fprintf("Payload descent time (+launch): %.2f s\n", resultantStates.t(end) - resultantStates.t(1) + mainSys.configParams.jettisonListener.t_trigger);
+fprintf("Payload descent time (+apogee): %.2f s\n", resultantStates.t(end) - resultantStates.t(1) + mainSys.configParams.jettisonListener.t_trigger - mainSys.configParams.apogeeListener.t_trigger);
+fprintf("Payload KE: %.3f lb-ft\n", resultantStates.yd(end)^2 * 0.5 * sys.m * uc.J_to_ftlbf);
 
+return;
 %% Plot x-y Trajectory
 
 figure;

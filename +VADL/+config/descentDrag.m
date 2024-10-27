@@ -6,6 +6,8 @@ rocketDynamics.recalcTransientParameters(sys);
 % reference area for vertical drag calculations
 Ar_main = (rocketDynamics.A + rocketDynamics.A_side) / 2; % take average of frontal and side projected areas
 CDr_drogue = (1.42 * 1.41 * rocketDynamics.aerodynamicProfile.A_fin + 0.56 * (rocketDynamics.A_side)) / rocketDynamics.A;
+% Ar_main = rocketDynamics.A * 0.75 + rocketDynamics.A_side * 0.25;
+% CDr_drogue = 0.5;
 
 sys.configParams.rocketDrogueDescentDrag = DRSS.core.dynamics.SimpleDrag() ...
   .setArea(rocketDynamics.A) ...

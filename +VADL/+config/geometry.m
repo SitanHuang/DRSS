@@ -5,19 +5,19 @@ uc = DRSS.util.unitConv;
 sys.configParams.rocket_diameter = 6.170 * uc.in_to_m;
 
 l_fin = ... length to foremost tip of fins from tip of nose cone
-  63.8 * uc.in_to_m;
+  76.304 * uc.in_to_m;
 
 fin_root_len = ... fin root length
-  7 * uc.in_to_m;
+  6.75 * uc.in_to_m;
 
 l_fin_end = ... length from tip of fins to end of section
-  2.7 * uc.in_to_m + fin_root_len;
+  3.0 * uc.in_to_m + fin_root_len;
 
 fin_tip_len = ... fin tip length
-  (7 - 3.75) * uc.in_to_m;
+  (6.75 - 4.5) * uc.in_to_m;
 
 fin_semispan_len = ... fin semispan
-  6.75 * uc.in_to_m;
+  6.1 * uc.in_to_m;
 
 A_fin = ... fin projected area
   fin_semispan_len * (fin_root_len + fin_tip_len) / 2;
@@ -43,8 +43,9 @@ sys.configParams.rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   't_fin', 0.118 * uc.in_to_m, ... fin thickness
   'l_fin', l_fin, ... length to foremost tip of fins fins from tip of nose cone
   'N_fins', 4, ... number of fins
-  'CDr', 0.401, ... hardcoded rocket CD
+  ... 'CDr', 0.340, ... hardcoded rocket CD
+  'CDr', 0.432, ... hardcoded rocket CD
   ... 'CDr', 0, ... let DRSS calc CD for us
-  'CP', 53.186 * uc.in_to_m ... hardcoded CP
+  'CP', 60.4 * uc.in_to_m ... hardcoded CP
   ... 'CP', 47.161 * uc.in_to_m ... hardcoded CP
 );

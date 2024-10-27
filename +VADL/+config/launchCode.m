@@ -4,9 +4,13 @@ uc = DRSS.util.unitConv;
 
 % Launch Site
 
+if ~isfield(sys.configParams, 'windSpeed')
+  sys.configParams.windSpeed = 11;
+end
+
 sys ...
   .setLaunchSiteElevation(800 * uc.ft_to_m) ... set launch site elevation above mean sea level
-  .setLaunchSiteWindSpeed(11 * uc.mph_to_mps) ... reference (base) wind velocity
+  .setLaunchSiteWindSpeed(sys.configParams.windSpeed * uc.mph_to_mps) ... reference (base) wind velocity
   ;
 
 % Launch Rail
@@ -29,6 +33,12 @@ end
 sys.configParams.motorDynamics = DRSS.core.dynamics.Motor( ...
   fullfile(fileparts(mfilename('fullpath')), sprintf('../Motor Data/%s.csv', motorOverride)), ...
   motorOverride, @VADL.vadl_motor_database);
+
+if ~isfield(sys.configParams, 'motorLossFactor')
+  sys.configParams.motorLossFactor = 0.95; % L1720
+end
+
+sys.configParams.motorDynamics.setLossFactor(sys.configParams.motorLossFactor);
 
 motor = sys.configParams.motorDynamics.genMotorMass(); % the motor Mass is managed by this motorDynamics
 sys.appendChild(motor);

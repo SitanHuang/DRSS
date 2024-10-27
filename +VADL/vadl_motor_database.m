@@ -1,4 +1,4 @@
-function [L_motor, D_motor, m_motor0, m_prop0, was_motor_defined] = motor_database(motortype)
+function [L_motor, D_motor, m_motor0, m_prop0, was_motor_defined] = vadl_motor_database(motortype)
 
 % motor geometry
 was_motor_defined = false;
