@@ -17,6 +17,8 @@ classdef SystemState < handle
     m = []
     I = []
 
+    cgX = [];
+
     mdot = []
 
     % derived, time variant parameters

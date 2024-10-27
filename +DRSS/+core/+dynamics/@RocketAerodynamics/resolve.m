@@ -34,7 +34,7 @@ function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
   Re = rho * v_inf * L / mu;
   M_inf = v_inf / sqrt(gamma * R * T);
 
-  if M_inf < 0.1
+  if M_inf < 0.01
     return;
   end
 

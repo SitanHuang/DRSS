@@ -118,6 +118,7 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
     resultantParameters.m(end + 1) = systemState.m;
     resultantParameters.mdot(end + 1) = systemState.mdot;
     resultantParameters.I(end + 1) = systemState.I;
+    resultantParameters.cgX(end + 1) = system.cgX;
     resultantParameters.equivForceX(end + 1) = systemState.xdd * systemState.m;
     resultantParameters.equivForceY(end + 1) = systemState.ydd * systemState.m;
 
