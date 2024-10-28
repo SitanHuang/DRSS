@@ -73,13 +73,13 @@ return;
 %% Plot
 % plot(resultantParameters.t, resultantParameters.params.CAr);
 % yyaxis right;
-% plot(resultantParameters.t, resultantParameters.params.CDr);
+plot(resultantParameters.t, resultantParameters.params.CDr);
 
 % plot(resultantParameters.t, resultantParameters.params.ThrustToWeight);
 % plot(resultantParameters.t, resultantParameters.params.SSM);
 
 
-plot(resultantParameters.t, (resultantParameters.equivForceX.^2 + resultantParameters.equivForceY.^2) .^ (1/2));
+% plot(resultantParameters.t, (resultantParameters.equivForceX.^2 + resultantParameters.equivForceY.^2) .^ (1/2));
 
 % plot(resultantStates.t, resultantStates.yd  .* uc.mps_to_fps);
 % plot(resultantStates.t, resultantStates.y  .* uc.m_to_ft);
@@ -122,9 +122,17 @@ ylim([0 4500])
 grid on;
 hold on;
 
-plot(payloadStates.t, payloadStates.y .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
-legend('Vehicle', 'Payload')
-saveas(fig, "altitude", "png");
+% plot(payloadStates.t, payloadStates.y .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
+% legend('Vehicle', 'Payload')
+% saveas(fig, "altitude", "png");
+
+%% Altitude v time v OpenRocket
+
+openRocketDat = readtable("pdr.openrocket.export.csv.tmp.csv");
+plot(openRocketDat.x_Time_s_, openRocketDat.Altitude_ft_, 'Color', '#000000', 'LineWidth', 2);
+xlim([resultantStates.t(1) mainSys.configParams.apogeeListener.t_trigger])
+
+legend('VADL-DRSS', 'OpenRocket')
 
 %% Pitch Angle
 fig = figure;
@@ -146,9 +154,18 @@ xlim([resultantStates.t(1) resultantStates.t(end)])
 grid on;
 hold on;
 
-plot(payloadStates.t, payloadStates.yd .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
-legend('Vehicle', 'Payload')
-saveas(fig, "velocity", "png");
+% plot(payloadStates.t, payloadStates.yd .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
+% legend('Vehicle', 'Payload')
+% saveas(fig, "velocity", "png");
+
+%% Velocity v time v OpenRocket
+
+openRocketDat = readtable("pdr.openrocket.export.csv.tmp.csv");
+plot(openRocketDat.x_Time_s_, openRocketDat.VerticalVelocity_ft_s_, 'Color', '#000000', 'LineWidth', 2);
+xlim([resultantStates.t(1) mainSys.configParams.apogeeListener.t_trigger])
+ylim([0 600]);
+
+legend('VADL-DRSS', 'OpenRocket')
 
 %% Flight track
 fig = figure;

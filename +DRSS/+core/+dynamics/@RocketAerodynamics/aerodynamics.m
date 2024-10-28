@@ -132,8 +132,13 @@ function [CA,CN,CD,CL,CP] = aerodynamics(Re,v,alpha,cm,D,L,L_nose,L_body,A_planf
         % CD = CDr; % * (alpha * (.3 / .2967) + 1);
 
         % Sitan Huang's modifications:
-        CD = max(CD, CDr * (alpha * (.3 / .2967) + 1) / sqrt(1 - min(0.8, M_inf)^2));
-        %fprintf("Warning: possibly inaccurate model used. Check CD \n");
+        CD_adjusted = CDr * (alpha * (.3 / .2967) + 1) / sqrt(1 - min(0.8, M_inf)^2);
+
+        CD = max(CD, CD_adjusted);
+
+        if M_inf > 0.8
+            fprintf("Warning: Exceeded Mach 0.8. Models are non longer accurate. \n");
+        end
     end
 
     % axial coefficient from geometry
