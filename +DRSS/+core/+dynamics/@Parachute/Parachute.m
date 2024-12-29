@@ -1,6 +1,6 @@
 classdef Parachute < DRSS.core.dynamics.Dynamics
   properties
-    diameter % parachute projected diameter [in]
+    diameter % parachute projected diameter [m]
     CD % PROJECTED parachute vertical drag coefficient, NOT NOMINAL %NOTE= Fruity-Chutes provides projected drag coefficient
     n % parachute opening time parameter (toroidal = 9, elliptical = 8)
 
@@ -88,7 +88,7 @@ classdef Parachute < DRSS.core.dynamics.Dynamics
       % ^ Exponential model seems to match parachute jerk very well against real
       %   flight data; legacy codebase uses fourth-order (everyone was afraid to
       %   change or something) but that has been bullshit for many years against
-      %   real data before me (Sitan Huang), and gives ridiculously low opening Gs
+      %   real data, and gives ridiculously low opening Gs
 
       rho = ss.airDensity;
 
