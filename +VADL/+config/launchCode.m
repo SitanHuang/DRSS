@@ -45,7 +45,7 @@ sys.configParams.motorDynamics = DRSS.core.dynamics.Motor( ...
   motorOverride, @VADL.vadl_motor_database);
 
 if ~isfield(sys.configParams, 'motorLossFactor')
-  sys.configParams.motorLossFactor = 0.95; % L1720
+  sys.configParams.motorLossFactor = 0.965; % L1720
 end
 
 sys.configParams.motorDynamics.setLossFactor(sys.configParams.motorLossFactor);
@@ -55,5 +55,5 @@ sys.appendChild(motor);
 
 % Deployments
 
-sys.configParams.deployMainAltitude = 600 * uc.ft_to_m;
+sys.configParams.deployMainAltitude = (600 - 20) * uc.ft_to_m; % 20 = shockcord length
 sys.configParams.jettisonAltitude = 300 * uc.ft_to_m;

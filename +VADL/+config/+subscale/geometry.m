@@ -1,5 +1,9 @@
 function sys = geometry(sys)
 
+if ~isfield(sys.configParams, 'CDr')
+  sys.configParams.CDr = 0.403; % CFD, Cd (Jack Liedel)
+end
+
 uc = DRSS.util.unitConv;
 
 sys.configParams.rocket_diameter = 4.014 * uc.in_to_m;
@@ -43,7 +47,8 @@ sys.configParams.rocketDynamics = DRSS.core.dynamics.RocketAerodynamics( ...
   't_fin', 0.132 * uc.in_to_m, ... fin thickness
   'l_fin', l_fin, ... length to foremost tip of fins fins from tip of nose cone
   'N_fins', 4, ... number of fins
-  'CDr', 0.403, ... hardcoded rocket CD
+  'CDr', sys.configParams.CDr, ... CFD, CD
+  ... 'CDr', 0.510, ... OpenRocket, CD
   ... 'CDr', 0, ... let DRSS calc CD for us
   'CP', 40.383 * uc.in_to_m ... hardcoded CP
   ... 'CP', 47.161 * uc.in_to_m ... hardcoded CP

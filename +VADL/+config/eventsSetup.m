@@ -2,7 +2,7 @@ function sys = eventsSetup(sys)
 
 % Jettison Event: Set nose cone mass to 0
 sys.configParams.jettisonEvent = DRSS.core.dynamics.Jettison() ...
-  .trigger(sys.configParams.noseCone);
+  .trigger(sys.configParams.toBeJettisonedMasses);
 
 % Apogee Listener: Detects when the rocket reaches apogee
 sys.configParams.apogeeListener = DRSS.core.dynamics.events.Apogee() ...

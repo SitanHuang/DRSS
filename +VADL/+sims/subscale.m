@@ -6,7 +6,10 @@ windSpeedMPH = 5;
 
 [resultantStates, resultantParameters, sys] = VADL.sims.solveSubscale(struct( ...
   'windSpeed', windSpeedMPH, ... mph
-  'launchAngle', 4 ... deg
+  'launchAngle', 4, ... deg
+  ... 'motorLossFactor', 1 ...
+  ... 'useLegacyDrag', 1, ...
+  'motorLossFactor', 0.965 ...
 ));
 
 %% Flight Report
@@ -28,6 +31,7 @@ fprintf("Landing vel: %.1f fps\n", -resultantStates.yd(end - 10) * uc.mps_to_fps
 
 descentTime = resultantStates.t(end) - sys.configParams.apogeeListener.t_trigger;
 
+fprintf("Ascent Time: %.1f s\n", sys.configParams.apogeeListener.t_trigger);
 fprintf("Descent Time: %.1f s (80/90)\n", descentTime);
 
 fprintf("Drift: %.0f ft\n", resultantStates.x(end) .* uc.m_to_ft);
