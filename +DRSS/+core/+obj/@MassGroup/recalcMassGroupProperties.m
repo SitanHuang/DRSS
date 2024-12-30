@@ -9,6 +9,10 @@ function mg = recalcMassGroupProperties(mg)
     for i = 1:length(mg.massList)
         currentMass = mg.massList{i};
 
+        if isa(currentMass, "DRSS.core.obj.MassGroup")
+            currentMass.recalcMassGroupProperties();
+        end
+
         % Sum masses
         totalMass = totalMass + currentMass.m;
 
