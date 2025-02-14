@@ -51,7 +51,10 @@ end
 sys.configParams.motorDynamics.setLossFactor(sys.configParams.motorLossFactor);
 
 motor = sys.configParams.motorDynamics.genMotorMass(); % the motor Mass is managed by this motorDynamics
-sys.appendChild(motor);
+
+if ~(isfield(sys.configParams, 'noMotor') && sys.configParams.noMotor)
+  sys.appendChild(motor);
+end
 
 % Deployments
 
