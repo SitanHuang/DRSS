@@ -6,18 +6,26 @@ mainSys = VADL.config.getMainSys(struct( ...
   'disableJettison', true, ...
   'noMotor', false, ...
   'motorLossFactor', 0.965, ...
+  'noBallast', false, ...
   'launchAngle', 5, ...
+  'launchSiteElevation', 600, ...
+  'launchSiteTemp', 33, ...
+  'applyMassOffsetAtWetCG', 1, ...
   'windSpeed', 10));
 
 fprintf('Vehicle mass:  %.2f lb\n', mainSys.m / uc.lbm_to_kg);
 if ~(isfield(mainSys.configParams, 'noMotor') && mainSys.configParams.noMotor)
   motor_param = mainSys.configParams.motorDynamics.motor_params;
-  fprintf('       (dry):  %.2f lb\n', (mainSys.m - motor_param.m_prop0 + motor_param.m0) / uc.lbm_to_kg);
-  fprintf('  (no motor):  %.2f lb\n', (mainSys.m - motor_param.m_prop0) / uc.lbm_to_kg);
+  fprintf('       (dry):  %.2f lb\n', (mainSys.m - motor_param.m_prop0) / uc.lbm_to_kg);
+  fprintf('  (no motor):  %.2f lb\n', (mainSys.m - motor_param.m_prop0 - motor_param.m0) / uc.lbm_to_kg);
 end
 fprintf('Vehicle len:   %.2f in\n', mainSys.len * uc.m_to_in);
 fprintf('Vehicle CGx:   %.2f in\n', mainSys.cgX * uc.m_to_in);
 fprintf('Vehicle SSM:   %.2f cal\n', mainSys.configParams.ssm);
+
+if isfield(mainSys.configParams, 'noMotor') && mainSys.configParams.noMotor
+  return;
+end
 
 %% Solve
 
@@ -25,7 +33,7 @@ solver = DRSS.solver.MatlabODESolver(mainSys) ...
   .setCaptureResultantParameters(true) ...
   .setPrintPerformanceSummary(true) .....
   .configureODE('RelTol', 1e-9) ...
-  .overrideODEFunc(@ode113);
+  .overrideODEFunc(@ode45);
 
 [resultantStates, resultantParameters] = solver.solve();
 
@@ -35,9 +43,12 @@ fprintf("CDr: %.2f - %.2f\n", mainSys.configParams.rocketDynamics.cdr_min, mainS
 fprintf("CAr: %.2f - %.2f\n", max(resultantParameters.params.CAr), min(resultantParameters.params.CAr));
 fprintf("CP: %.2f - %.2f\n", mainSys.configParams.rocketDynamics.cp_calc_min, mainSys.configParams.rocketDynamics.cp_calc_max);
 fprintf("Apogee: %.0f ft\n", max(resultantStates.y) .* uc.m_to_ft);
+
+LREind = find(resultantStates.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
+
 fprintf("LRE: %.1f fps\n", mainSys.configParams.launchRail.v_launchRailExit .* uc.mps_to_fps);
 
-LREind = find(resultantParameters.t >= mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
+% LREind = find(resultantParameters.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
 
 fprintf("Avg. Thrust-to-Weight: %.1f\n", mean(resultantParameters.params.ThrustToWeight(~isnan(resultantParameters.params.ThrustToWeight))));
 fprintf("Thrust-to-Weight at LRE: %.1f\n", resultantParameters.params.ThrustToWeight(LREind));
@@ -51,15 +62,19 @@ mainOpeningStates = resultantStates.interpolate(mainSys.configParams.mainDeploym
 fprintf("Max G (main): %.1f\n", max(mainOpeningStates.accelMag) / 9.8);
 
 drogueNames = ["Fore", "Aft"];
-drogueMasses = [14.62, 23.27];
+drogueMasses = [14.68, 26.86];
 
 drogueKEs = mainOpeningStates.yd(1)^2 * 0.5 * uc.J_to_ftlbf * uc.lbm_to_kg .* drogueMasses;
 
 sectionNames = ["Fore", "Mid", "Aft"];
-sectionMasses = [6.56, 13.09, 10.18];
+sectionMasses = [7.26 12.52 14.34];
 
 if mainSys.configParams.disableJettison
-  sectionMasses = [15.75 11.45 7.666];
+  sectionMasses = [14.68 12.52 14.34];
+
+  if isfield(mainSys.configParams, 'noBallast') && mainSys.configParams.noBallast
+    sectionMasses(1) = sectionMasses(1) - 1;
+  end
 end
 
 sectionKEs = resultantStates.yd(end - 10)^2 * 0.5 * uc.J_to_ftlbf * uc.lbm_to_kg .* sectionMasses;
