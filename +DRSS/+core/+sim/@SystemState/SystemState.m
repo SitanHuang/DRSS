@@ -80,7 +80,7 @@ classdef SystemState < handle
       gamma = 1.4; % spec. heat ratio for air
       g0 = 9.80665; % gravitational acceleration at mean sea level [m/s^2]
 
-      this.windSpeed = DRSS.legacy.wind_calc(sys.launchSiteWindSpeed, eps, this.y, 7);  % 7 = power law denominator for wind
+      this.windSpeed = DRSS.legacy.wind_calc(sys.launchSiteWindSpeed, eps, this.y, sys.launchSiteWindModelPowerParameter);  % 7 = power law denominator for wind
 
       [this.airDensity, this.airTemp, this.airPressure, this.airDynViscosity] = ...
         DRSS.legacy.atmosphere(this.y, T0, p0, R, B, g0);

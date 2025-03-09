@@ -25,6 +25,7 @@ classdef System < DRSS.core.obj.MassGroup
     launchSitePressure = 101592;
     % launch site reference wind speed [m/s]
     launchSiteWindSpeed = 0;
+    launchSiteWindModelPowerParameter = 7;
 
     % associated parameters freely available to users
     configParams = struct();
@@ -48,6 +49,9 @@ classdef System < DRSS.core.obj.MassGroup
     end
     function this=setLaunchSiteWindSpeed(this, val)
       this.launchSiteWindSpeed = val;
+    end
+    function this=setLaunchSiteWindModelPowerParameter(this, val)
+      this.launchSiteWindModelPowerParameter = val;
     end
 
     function this=setSystemState(this, val)
