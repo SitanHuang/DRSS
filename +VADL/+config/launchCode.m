@@ -70,5 +70,5 @@ end
 
 % Deployments
 
-sys.configParams.deployMainAltitude = (600 - 20) * uc.ft_to_m; % 20 = shockcord length
+sys.configParams.deployMainAltitude = (750 - 20) * uc.ft_to_m; % 20 = shockcord length
 sys.configParams.jettisonAltitude = 300 * uc.ft_to_m;

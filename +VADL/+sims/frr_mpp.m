@@ -3,15 +3,15 @@ uc = DRSS.util.unitConv;
 
 %% Set up
 mainSys = VADL.config.getMainSys(struct( ...
-  'disableJettison', true, ...
+  'disableJettison', false, ...
   'noMotor', false, ...
-  'motorLossFactor', 0.985, ...
+  'motorLossFactor', 0.965, ...
   'noBallast', false, ...
   'launchAngle', 5, ...
   'launchSiteElevation', 600, ...
-  'launchSiteTemp', 40, ...
-  ... 'applyMassOffsetAtWetCG', 1, ...
-  'windSpeed', 2.5));
+  'launchSiteTemp', 90, ...
+  'applyMassOffsetAtWetCG', 0, ...
+  'windSpeed', 11));
 
 fprintf('Vehicle mass:  %.2f lb\n', mainSys.m / uc.lbm_to_kg);
 if ~(isfield(mainSys.configParams, 'noMotor') && mainSys.configParams.noMotor)
@@ -101,7 +101,6 @@ payloadStates.t = payloadStates.t + mainSys.configParams.jettisonListener.t_trig
 
 return;
 %% Plot
-plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm);
 % plot(resultantParameters.t, resultantParameters.params.CAr);
 % yyaxis right;
 % plot(resultantParameters.t, resultantParameters.params.CDr);
@@ -154,10 +153,10 @@ ylim([0 4500])
 grid on;
 hold on;
 
-% plot(payloadStates.t, payloadStates.y .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
-% legend('Vehicle', 'Payload')
-% saveas(fig, "340_altitude", "png");
-% close(fig);
+plot(payloadStates.t, payloadStates.y .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
+legend('Vehicle', 'Payload')
+saveas(fig, "340_altitude", "png");
+close(fig);
 
 %% Altitude v time v OpenRocket
 
@@ -190,8 +189,8 @@ hold on;
 
 plot(payloadStates.t, payloadStates.yd .* uc.m_to_ft, 'Color', 'black', 'LineWidth', 2);
 legend('Vehicle', 'Payload')
-% saveas(fig, "340_velocity", "png");
-% close(fig)
+saveas(fig, "340_velocity", "png");
+close(fig)
 
 %% Velocity v time v OpenRocket
 
@@ -232,12 +231,12 @@ saveas(fig, "340_thrust", "png");
 %% Thrust to weight
 fig = figure;
 plot(resultantParameters.t, resultantParameters.params.ThrustToWeight, 'Color', '#D8AB4C', 'LineWidth', 2);
-title("Effective Thrust-to-Weight w/ Launch Rail Friction Modeling");
+title("Thrust-to-Weight after Launch Rail Friction Adjustment");
 ylabel("Thrust-to-Weight Ratio [1]")
 xlabel("Time [s]");
 grid on;
 
-% saveas(fig, "340_thrustratio", "png");
+saveas(fig, "340_thrustratio", "png");
 
 %% SSM v time
 meta = mainSys.configParams.rocketDynamics.aerodynamicProfile;
