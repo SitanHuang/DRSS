@@ -7,6 +7,14 @@ classdef Jettison < DRSS.core.dynamics.Dynamics
     boundMassList = {}
   end
 
+  properties(Transient, SetAccess=protected)
+    totalJettisonedMass = 0
+  end
+
+  properties(Transient, Access=protected)
+    jettisoned = false;
+  end
+
   methods
     function this = Jettison
       this.setEnabledOnInit(false);
@@ -25,11 +33,21 @@ classdef Jettison < DRSS.core.dynamics.Dynamics
 
   methods (Access=protected)
     function [this, sys, ss] = onEnable(this, sys, ss)
+      if ~this.jettisoned
+        this.totalJettisonedMass = 0;
+      end
+
       for i = 1:numel(this.boundMassList)
         massObj = this.boundMassList{i};
+
+        if ~this.jettisoned
+          this.totalJettisonedMass = this.totalJettisonedMass + massObj.m;
+        end
+
         massObj.m = 0;
       end
 
+      this.jettisoned = true;
       ss.massChanged = true;
     end
   end
