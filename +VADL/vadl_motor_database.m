@@ -117,7 +117,7 @@ end
 if motortype == "L1720"
     L_motor= 0.486; % motor length [m] L1720
     D_motor= 0.075; % motor diameter [m] L1720
-    m_motor0 = 3.432; % total motor initial mass [kg] 1720
+    m_motor0 = 3.341; % total motor initial mass [kg] 1720
     m_prop0 = 1.755; % initial motor propellent mass [kg] 1720
     was_motor_defined = true;
 end
