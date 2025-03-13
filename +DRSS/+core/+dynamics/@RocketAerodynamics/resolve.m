@@ -74,6 +74,10 @@ function [this, sys, terminate, xdd, ydd, tdd, mdot]=resolve(this, sys, ss)
   this.cp_calc_max = max(this.cp_calc_max, CP);
   this.cp_calc_min = min(this.cp_calc_min, CP);
 
+  if isnan(this.cp_calc_0)
+    this.cp_calc_0 = CP;
+  end
+
   ss.params.CDr = CD;
   ss.params.CAr = CA;
   ss.params.SSM = ssm;

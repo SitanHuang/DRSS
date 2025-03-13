@@ -11,10 +11,10 @@ if ~isfield(sys.configParams, 'launchAngle')
   sys.configParams.launchAngle = 5;
 end
 if ~isfield(sys.configParams, 'launchSiteElevation')
-  sys.configParams.launchSiteElevation = 528;
+  sys.configParams.launchSiteElevation = 600;
 end
 if ~isfield(sys.configParams, 'launchSiteTemp')
-  sys.configParams.launchSiteTemp = 45;
+  sys.configParams.launchSiteTemp = 90;
 end
 
 sys ...
@@ -28,7 +28,7 @@ sys ...
 sys.configParams.launchRail = DRSS.core.dynamics.LaunchRail() ...
   .setLaunchRailAngleDeg(sys.configParams.launchAngle) ...
   .setLaunchRailLength((12 - 1) * 12 * uc.in_to_m) ... one foot reserved for motor ground clearance
-  .setLaunchRailButtonLoc(92 * uc.in_to_m) ...
+  .setLaunchRailButtonLoc(77 * uc.in_to_m) ...
   .setLaunchRailExitVelocityMethod(DRSS.core.dynamics.LaunchExitVelocityMethods.RAIL_BUTTON_CROSSES_RAIL_TIP) ...
   .bindToGravityDynamics(sys.configParams.gravityDynamics);
 
@@ -70,5 +70,11 @@ end
 
 % Deployments
 
-sys.configParams.deployMainAltitude = (750 - 20) * uc.ft_to_m; % 20 = shockcord length
+% BELOW IS USED ONLY FOR CERTAIN VEHICLE CONFIGURATIONS (e.g., your IMU is not supported by drogue until main chute shock cord tightens)
+% sys.configParams.deployMainAltitude = (750) * uc.ft_to_m;
+% sys.configParams.mainOpeningAltitude = (750 - 125) * uc.ft_to_m; % 25ft shock cord takes 150 ft altitude difference at 100 fps drogue speed; 125 ft for 80 fps drogue
+
+sys.configParams.deployMainAltitude = (750 - 25) * uc.ft_to_m;
+sys.configParams.mainOpeningAltitude = (750 - 25 - 1) * uc.ft_to_m;
+
 sys.configParams.jettisonAltitude = 300 * uc.ft_to_m;

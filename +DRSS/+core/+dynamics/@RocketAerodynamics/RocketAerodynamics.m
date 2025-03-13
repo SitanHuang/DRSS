@@ -17,6 +17,7 @@ classdef RocketAerodynamics < DRSS.core.dynamics.Dynamics
     ssm_max = -inf
     cdr_min = inf
     cdr_max = -inf
+    cp_calc_0 = nan
     cp_calc_min = inf
     cp_calc_max = -inf
   end

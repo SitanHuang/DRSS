@@ -1,5 +1,7 @@
 function sys = buildFullRocketSystem(sys)
 
+uc = DRSS.util.unitConv();
+
 sys = sys ...
   .subjectTo(sys.configParams.gravityDynamics) ...
   ... Ascent-specific:
@@ -17,6 +19,7 @@ sys = sys ...
   .subjectTo(sys.configParams.apogeeListener) ...
   .subjectTo(sys.configParams.disableAscentDynamics) ...
   .subjectTo(sys.configParams.mainDeploymentListener) ...
+  .subjectTo(sys.configParams.mainOpeningListener) ...
   .subjectTo(sys.configParams.disableDrogueDynamics) ...
   .subjectTo(sys.configParams.jettisonListener);
 
@@ -32,3 +35,20 @@ end
 sys.configParams.rocketDynamics.recalcTransientParameters(sys);
 
 sys.configParams.ssm = (sys.configParams.rocketDynamics.aerodynamicProfile.CP - sys.cgX) / sys.configParams.rocketDynamics.aerodynamicProfile.D;
+
+sys.configParams.sectionalMasses = [
+  sys.configParams.payloadBay.m + sys.configParams.noseCone.m
+  sys.configParams.recoveryBay.m
+  sys.configParams.tail.m + sys.configParams.motorDynamics.motorMassGroup.m
+] .* uc.kg_to_lbm;
+
+if isfield(sys.configParams, 'noMotor') && sys.configParams.noMotor
+  sys.configParams.sectionalMasses(end) = sys.configParams.sectionalMasses(end) - sys.configParams.motorDynamics.motorMassGroup.m .* uc.kg_to_lbm;
+else
+  sys.configParams.sectionalMasses(end) = sys.configParams.sectionalMasses(end) - sys.configParams.motorDynamics.motor_params.m_prop0 .* uc.kg_to_lbm;
+end
+
+% Jettison case:
+if ~(isfield(sys.configParams, 'disableJettison') && sys.configParams.disableJettison)
+  sys.configParams.sectionalMasses(1) = sys.configParams.sectionalMasses(1) - sys.configParams.jettisonedTotalMass .* uc.kg_to_lbm;
+end

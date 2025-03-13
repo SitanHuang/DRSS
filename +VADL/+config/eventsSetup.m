@@ -25,9 +25,17 @@ sys.configParams.mainDeploymentListener = DRSS.core.dynamics.events.Altitude() .
   .setEnabledOnInit(false) ...
   .setAlitude(sys.configParams.deployMainAltitude);
 
+% Main Opening Listener: Triggers main parachute opening at a specified altitude
+sys.configParams.mainOpeningListener = DRSS.core.dynamics.events.Altitude() ...
+  .setEnabledOnInit(false) ...
+  .setAlitude(sys.configParams.mainOpeningAltitude) ...
+  .trigger(sys.configParams.main) ... % Main parachute comes into full effect
+  .trigger(sys.configParams.drogue); % Drogue parachute comes back into effect
+
 % Disable Drogue Dynamics Event: Disables drogue stage rocket drag upon trigger
 sys.configParams.disableDrogueDynamics = DRSS.core.dynamics.events.TriggerOnEnable() ...
   .setDisableBoundDynamicsOnTrigger(true) ...
+  .trigger(sys.configParams.drogue) ... % Before main shock cord is taught, the vehicle section experiences no force by the drogue
   .trigger(sys.configParams.rocketDrogueDescentDrag); % Disable drogue stage rocket drag
 
 % Jettison Listener: Triggers nose cone jettison at a specified altitude
@@ -51,10 +59,7 @@ sys.configParams.launchRail.trigger(sys.configParams.apogeeListener);
 
 % Main Deployment Listener Triggers
 sys.configParams.mainDeploymentListener ...
-  .trigger(sys.configParams.main) ...                      % Deploy main parachute
   .trigger(sys.configParams.rocketMainDescentDrag) ...     % Enable main stage rocket drag
   .trigger(sys.configParams.disableDrogueDynamics) ...     % Disable drogue dynamics
+  .trigger(sys.configParams.mainOpeningListener) ...    % Enable main parachute opening
   .trigger(sys.configParams.jettisonListener);             % Enable jettison listener
-
-% Main Deployment Listener Triggers Jettison Listener
-sys.configParams.mainDeploymentListener.trigger(sys.configParams.jettisonListener);

@@ -4,7 +4,8 @@ rocketDynamics = sys.configParams.rocketDynamics;
 rocketDynamics.recalcTransientParameters(sys);
 
 % reference area for vertical drag calculations
-Ar_drogue = rocketDynamics.A * 0.45 + rocketDynamics.A_side * 0.55; % expose 25% of side
+% Ar_drogue = rocketDynamics.A * 0.45 + rocketDynamics.A_side * 0.55; % expose 25% of side
+Ar_drogue = rocketDynamics.A * 0.75 + rocketDynamics.A_side * 0.25; % expose 25% of side
 Ar_main = rocketDynamics.A * 0.75 + rocketDynamics.A_side * 0.25; % expose 25% of side
 % CDr_drogue = (1.42 * 1.41 * rocketDynamics.aerodynamicProfile.A_fin + 0.56 * (rocketDynamics.A_side)) / rocketDynamics.A;
 

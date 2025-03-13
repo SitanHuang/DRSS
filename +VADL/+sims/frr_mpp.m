@@ -5,23 +5,22 @@ uc = DRSS.util.unitConv;
 mainSys = VADL.config.getMainSys(struct( ...
   'disableJettison', false, ...
   'noMotor', false, ...
-  'motorLossFactor', 0.965, ...
   'noBallast', false, ...
   'launchAngle', 5, ...
-  'launchSiteElevation', 600, ...
+  'ballastOffset', 0, ...
   'launchSiteTemp', 90, ...
-  'applyMassOffsetAtWetCG', 0, ...
   'windSpeed', 11));
 
-fprintf('Vehicle mass:  %.2f lb\n', mainSys.m / uc.lbm_to_kg);
+fprintf('Vehicle mass:     %.2f lb\n', mainSys.m / uc.lbm_to_kg);
 if ~(isfield(mainSys.configParams, 'noMotor') && mainSys.configParams.noMotor)
   motor_param = mainSys.configParams.motorDynamics.motor_params;
-  fprintf('       (dry):  %.2f lb\n', (mainSys.m - motor_param.m_prop0) / uc.lbm_to_kg);
-  fprintf('  (no motor):  %.2f lb\n', (mainSys.m - motor_param.m_prop0 - motor_param.m0) / uc.lbm_to_kg);
+  fprintf('       (dry):     %.2f lb\n', (mainSys.m - motor_param.m_prop0) / uc.lbm_to_kg);
+  fprintf('  (no motor):     %.2f lb\n', (mainSys.m - motor_param.m_prop0 - motor_param.m0) / uc.lbm_to_kg);
 end
-fprintf('Vehicle len:   %.2f in\n', mainSys.len * uc.m_to_in);
-fprintf('Vehicle CGx:   %.2f in\n', mainSys.cgX * uc.m_to_in);
-fprintf('Vehicle SSM:   %.2f cal\n', mainSys.configParams.ssm);
+fprintf('Landing:          [%.2f lb, %.2f lb, %.2f lb]\n', mainSys.configParams.sectionalMasses(1), mainSys.configParams.sectionalMasses(2), mainSys.configParams.sectionalMasses(3));
+fprintf('Vehicle len:      %.2f in\n', mainSys.len * uc.m_to_in);
+fprintf('Vehicle CGx:      %.2f in\n', mainSys.cgX * uc.m_to_in);
+fprintf('Vehicle SSM:      %.2f cal\n', mainSys.configParams.ssm);
 
 if isfield(mainSys.configParams, 'noMotor') && mainSys.configParams.noMotor
   return;
@@ -32,8 +31,8 @@ end
 solver = DRSS.solver.MatlabODESolver(mainSys) ...
   .setCaptureResultantParameters(true) ...
   .setPrintPerformanceSummary(true) .....
-  .configureODE('RelTol', 1e-9) ...
-  .overrideODEFunc(@ode45);
+  .configureODE('RelTol', 1e-9, 'MaxStep', 0.05) ...
+  .overrideODEFunc(@ode15s);
 
 [resultantStates, resultantParameters] = solver.solve();
 
@@ -41,7 +40,7 @@ solver = DRSS.solver.MatlabODESolver(mainSys) ...
 fprintf("SSM: %.2f - %.2f\n", mainSys.configParams.rocketDynamics.ssm_min, mainSys.configParams.rocketDynamics.ssm_max);
 fprintf("CDr: %.2f - %.2f\n", mainSys.configParams.rocketDynamics.cdr_min, mainSys.configParams.rocketDynamics.cdr_max);
 fprintf("CAr: %.2f - %.2f\n", max(resultantParameters.params.CAr), min(resultantParameters.params.CAr));
-fprintf("CP: %.2f - %.2f\n", mainSys.configParams.rocketDynamics.cp_calc_min, mainSys.configParams.rocketDynamics.cp_calc_max);
+fprintf("CP: %.2f - %.2f, %.2f\n", mainSys.configParams.rocketDynamics.cp_calc_min .* uc.m_to_in, mainSys.configParams.rocketDynamics.cp_calc_max .* uc.m_to_in, mainSys.configParams.rocketDynamics.cp_calc_0 .* uc.m_to_in);
 fprintf("Apogee: %.0f ft\n", max(resultantStates.y) .* uc.m_to_ft);
 
 LREind = find(resultantStates.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
@@ -52,6 +51,8 @@ fprintf("LRE: %.1f fps\n", mainSys.configParams.launchRail.v_launchRailExit .* u
 
 fprintf("Avg. Thrust-to-Weight: %.1f\n", mean(resultantParameters.params.ThrustToWeight(~isnan(resultantParameters.params.ThrustToWeight))));
 fprintf("Thrust-to-Weight at LRE: %.1f\n", resultantParameters.params.ThrustToWeight(LREind));
+fprintf("SSM on pad: %.2f\n", resultantParameters.params.SSM(1));
+fprintf("SSM at LRE: %.2f\n", resultantParameters.params.SSM(LREind));
 
 ascentStates = resultantStates.interpolate(0:0.005:mainSys.configParams.apogeeListener.t_trigger);
 fprintf("Max G (ascent): %.1f\n", max(ascentStates.accelMag) / 9.8);
@@ -62,20 +63,12 @@ mainOpeningStates = resultantStates.interpolate(mainSys.configParams.mainDeploym
 fprintf("Max G (main): %.1f\n", max(mainOpeningStates.accelMag) / 9.8);
 
 drogueNames = ["Fore", "Aft"];
-drogueMasses = [14.68, 26.86];
+drogueMasses = [mainSys.configParams.sectionalMasses(1) sum(mainSys.configParams.sectionalMasses(2:3))];
 
 drogueKEs = mainOpeningStates.yd(1)^2 * 0.5 * uc.J_to_ftlbf * uc.lbm_to_kg .* drogueMasses;
 
 sectionNames = ["Fore", "Mid", "Aft"];
-sectionMasses = [7.26 12.52 14.34];
-
-if mainSys.configParams.disableJettison
-  sectionMasses = [14.68 12.52 14.34];
-
-  if isfield(mainSys.configParams, 'noBallast') && mainSys.configParams.noBallast
-    sectionMasses(1) = sectionMasses(1) - 1;
-  end
-end
+sectionMasses = mainSys.configParams.sectionalMasses';
 
 sectionKEs = resultantStates.yd(end - 10)^2 * 0.5 * uc.J_to_ftlbf * uc.lbm_to_kg .* sectionMasses;
 
@@ -93,7 +86,7 @@ apogeeState = mainSys.configParams.apogeeListener.systemStateAtTrigger;
 
 fprintf("Drift from apogee: %.0f ft\n", (apogeeState.x - resultantStates.x(end)) .* uc.m_to_ft)
 fprintf("Drift (nominal): %.0f ft\n", (descentTime .* mainSys.launchSiteWindSpeed) .* uc.m_to_ft)
-return;
+% return;
 %%
 [payloadSys, payloadStates, ~] = VADL.sims.payload(mainSys, resultantStates);
 
@@ -133,7 +126,7 @@ plot(resultantStates.t(1:(end - 10)), resultantStates.accelMag(1:(end - 10)) ./ 
 title("Acceleration");
 ylabel("Acceleration, G [1]")
 xlabel("Time [s]");
-xlim([resultantStates.t(1) resultantStates.t(end - 10)])
+xlim([resultantStates.t(1) payloadStates.t(end - 10)])
 grid on;
 hold on;
 
@@ -148,7 +141,7 @@ plot(resultantStates.t, resultantStates.y .* uc.m_to_ft, 'Color', '#D8AB4C', 'Li
 title("Altitude");
 ylabel("Altitude [ft]")
 xlabel("Time [s]");
-xlim([resultantStates.t(1) resultantStates.t(end)])
+xlim([resultantStates.t(1) payloadStates.t(end)])
 ylim([0 4500])
 grid on;
 hold on;
@@ -227,6 +220,7 @@ xlabel("Time [s]");
 grid on;
 
 saveas(fig, "340_thrust", "png");
+close(fig)
 
 %% Thrust to weight
 fig = figure;
@@ -237,6 +231,7 @@ xlabel("Time [s]");
 grid on;
 
 saveas(fig, "340_thrustratio", "png");
+close(fig)
 
 %% SSM v time
 meta = mainSys.configParams.rocketDynamics.aerodynamicProfile;
