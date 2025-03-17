@@ -65,7 +65,13 @@ fprintf("Max G (main): %.1f\n", max(mainOpeningStates.accelMag) / 9.8);
 drogueNames = ["Fore", "Aft"];
 drogueMasses = [mainSys.configParams.sectionalMasses(1) sum(mainSys.configParams.sectionalMasses(2:3))];
 
+if isfield(mainSys.configParams, 'jettisonedTotalMass') && mainSys.configParams.jettisonedTotalMass > 0
+  drogueMasses(1) = drogueMasses(1) + mainSys.configParams.jettisonedTotalMass * uc.kg_to_lbm;
+end
+
 drogueKEs = mainOpeningStates.yd(1)^2 * 0.5 * uc.J_to_ftlbf * uc.lbm_to_kg .* drogueMasses;
+
+fprintf('Drogue:          [%.2f lb, %.2f lb]\n', drogueMasses(1), drogueMasses(2));
 
 sectionNames = ["Fore", "Mid", "Aft"];
 sectionMasses = mainSys.configParams.sectionalMasses';
@@ -75,6 +81,7 @@ sectionKEs = resultantStates.yd(end - 10)^2 * 0.5 * uc.J_to_ftlbf * uc.lbm_to_kg
 descentTime = resultantStates.t(end) - mainSys.configParams.apogeeListener.t_trigger;
 
 fprintf("Drogue KE: %s - %.1f lb-ft (65/75)\n", [drogueNames; drogueKEs]);
+fprintf('Main:            [%.2f lb, %.2f lb, %.2f lb]\n', sectionMasses(1), sectionMasses(2), sectionMasses(3));
 fprintf("Landing KE: %s - %.1f lb-ft (65/75)\n", [sectionNames; sectionKEs]);
 fprintf("Landing vel: %.1f fps\n", -resultantStates.yd(end - 10) * uc.mps_to_fps);
 fprintf("Descent Time: %.1f s (80/90)\n", descentTime);
