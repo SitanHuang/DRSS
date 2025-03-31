@@ -32,6 +32,10 @@ sys.configParams.launchRail = DRSS.core.dynamics.LaunchRail() ...
   .setLaunchRailExitVelocityMethod(DRSS.core.dynamics.LaunchExitVelocityMethods.RAIL_BUTTON_CROSSES_RAIL_TIP) ...
   .bindToGravityDynamics(sys.configParams.gravityDynamics);
 
+if isfield(sys.configParams, 'launchRailEffectiveTravel')
+  sys.configParams.launchRail.setLaunchRailLength(sys.configParams.launchRailEffectiveTravel .* uc.ft_to_m);
+end
+
 % Motor
 
 motorOverride = "L1720";
@@ -42,7 +46,8 @@ end
 
 sys.configParams.motorDynamics = DRSS.core.dynamics.Motor( ...
   fullfile(fileparts(mfilename('fullpath')), sprintf('../Motor Data/%s.csv', motorOverride)), ...
-  motorOverride, @VADL.vadl_motor_database);
+  motorOverride, @VADL.vadl_motor_database) ...
+  .setAdjustForGrounding(true); % get slighly more accurate LRE vel
 
 if ~isfield(sys.configParams, 'motorLossFactor')
   sys.configParams.motorLossFactor = 0.965; % L1720

@@ -13,13 +13,13 @@ classdef Motor < DRSS.core.dynamics.Dynamics
     % (ex. guide rail friction, wobbly rocket body, or poor motor specs)
     lossFactor = 1
 
-    % % only output force when thrust is known to completely replace the
-    % % normal force; reduces jitter but may have performance implications;
-    % % on the other hand, jitter may increase the number of frames ODE45
-    % % needs to calculate
-    % %
-    % % Default: true
-    % adjustForGrounding = true
+    % only output force when thrust is known to completely replace the
+    % normal force; reduces jitter but may have performance implications;
+    % on the other hand, jitter may increase the number of frames ODE45
+    % needs to calculate
+    %
+    % Default: true
+    adjustForGrounding = true
 
     t0 = 0
   end
@@ -131,18 +131,18 @@ classdef Motor < DRSS.core.dynamics.Dynamics
       ss.params.ThrustToWeight = thrust / 9.8 / ss.m; % TODO: should use variable gravity
       ss.params.Thrust = thrust; % TODO: should use variable gravity
 
-      % if this.adjustForGrounding
-      %   gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);
-      %   grounding = DRSS.core.dynamics.Gravity.getCurrentGroundingFromSystemState(ss);
+      if this.adjustForGrounding
+        gravAcc = DRSS.core.dynamics.Gravity.getCurrentGravAccFromSystemState(ss);
+        grounding = DRSS.core.dynamics.Gravity.getCurrentGroundingFromSystemState(ss);
 
-      %   if grounding && -ydd <= gravAcc
-      %     % rocket on ground and thrust hasn't exceeded gravitational pull;
-      %     % there shouldn't be any movement as thrust simply substitutes a
-      %     % portion of the normal force
-      %     ydd = 0;
-      %     xdd = 0;
-      %   end
-      % end
+        if grounding && ydd + gravAcc <= 0
+          % rocket on ground and thrust hasn't exceeded gravitational pull;
+          % there shouldn't be any movement as thrust simply substitutes a
+          % portion of the normal force
+          ydd = 0;
+          xdd = 0;
+        end
+      end
     end
   end
 

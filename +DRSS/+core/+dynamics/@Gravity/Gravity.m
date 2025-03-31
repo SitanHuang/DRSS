@@ -12,18 +12,18 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
     g0 = 9.80665
   end
 
-  % % Static properties emulated as static getter methods
-  % methods (Static)
-  %   % Key in the SystemState.params Map obj to access the current gravitational acceleration in m/s^2
-  %   function key = SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC
-  %     key = 'Gravity.CurrentGravAcc';
-  %   end
+  % Static properties emulated as static getter methods
+  methods (Static)
+    % Key in the SystemState.params Map obj to access the current gravitational acceleration in m/s^2
+    function key = SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC
+      key = 'CurrentGravAcc';
+    end
 
-  %   % Key in the SystemState.params Map obj to denote grounding
-  %   function key = SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING
-  %     key = 'Gravity.CurrentGrounding';
-  %   end
-  % end
+    % Key in the SystemState.params Map obj to denote grounding
+    function key = SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING
+      key = 'CurrentGrounding';
+    end
+  end
 
   properties
     % GROUNDINGHEIGHT Height of ground in meters.
@@ -78,12 +78,19 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
       this.groundingTimeThreshold = val;
     end
 
-    function [this, sys, massChanged]=step(this, sys, ss)
-      % gravAcc = -this.g0 * (this.RE / (this.RE + sys.launchSiteElevation + ss.y))^2;
-      % ss.params(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC) = gravAcc;
+    function [this, sys, ss0] = resetTransientData(this, sys, ss0)
+      [this, sys, ss0] = resetTransientData@DRSS.core.dynamics.Dynamics(this, sys, ss0);
 
-      % grounding = abs(ss.y - this.groundingHeight) <= this.groundingThreshold;
-      % ss.params(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING) = grounding;
+      ss0.declareCustomParam(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC);
+      ss0.declareCustomParam(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING);
+    end
+
+    function [this, sys, massChanged]=step(this, sys, ss)
+      gravAcc = -this.g0 * (this.RE / (this.RE + sys.launchSiteElevation + ss.y))^2;
+      ss.params.(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC) = gravAcc;
+
+      grounding = abs(ss.y - this.groundingHeight) <= this.groundingThreshold;
+      ss.params.(this.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING) = grounding;
 
       massChanged = false;
     end
@@ -129,20 +136,20 @@ classdef Gravity < DRSS.core.dynamics.Dynamics
 
       g = -g0 * (RE / (RE + sys.launchSiteElevation + ss.y))^2;
     end
-    % function gravAcc = getCurrentGravAccFromSystemState(ss)
-    %   gravAcc = nan;
+    function gravAcc = getCurrentGravAccFromSystemState(ss)
+      gravAcc = nan;
 
-    %   if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC)
-    %     gravAcc = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC);
-    %   end
-    % end
+      if isfield(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC())
+        gravAcc = ss.params.(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GRAV_ACC);
+      end
+    end
 
-    % function grounding = getCurrentGroundingFromSystemState(ss)
-    %   grounding = nan;
+    function grounding = getCurrentGroundingFromSystemState(ss)
+      grounding = nan;
 
-    %   if isKey(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING)
-    %     grounding = ss.params(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING);
-    %   end
-    % end
+      if isfield(ss.params, DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING())
+        grounding = ss.params.(DRSS.core.dynamics.Gravity.SYSTEMSTATE_PARAM_KEY_CURRENT_GROUNDING);
+      end
+    end
   end
 end

@@ -42,7 +42,7 @@ function [CA,CN,CD,CL,CP] = aerodynamics(Re,v,alpha,cm,D,L,L_nose,L_body,A_planf
 
     Re_c = 5e5; % critical reynolds number for transition
 
-    % we assume the max. angle of attack for these equations is 10 deg
+    % we assume the max. angle of attack for these equations is 25 deg
     if alpha > 0.174533
         alpha = 0.174533;
         %fprintf("Warning: alpha exceeded max in aerodynamics.m\n");
