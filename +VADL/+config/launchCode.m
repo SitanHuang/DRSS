@@ -17,10 +17,28 @@ if ~isfield(sys.configParams, 'launchSiteTemp')
   sys.configParams.launchSiteTemp = 90;
 end
 
+% Turbulent model
+if ~isfield(sys.configParams, 'windModelLowSpeed')
+  sys.configParams.windModelLowSpeed = 5;
+end
+if ~isfield(sys.configParams, 'windModelHighSpeed')
+  sys.configParams.windModelHighSpeed = 16;
+end
+if ~isfield(sys.configParams, 'windModelTurbulence')
+  sys.configParams.windModelTurbulence = 0; % Disables the model
+end
+if ~isfield(sys.configParams, 'windModelFreq')
+  sys.configParams.windModelFreq = 0.2;
+end
+
 sys ...
   .setLaunchSiteElevation(sys.configParams.launchSiteElevation * uc.ft_to_m) ... lebanon, TN - elevation above mean sea level
-  .setLaunchSiteTemp((sys.configParams.launchSiteTemp - 32) * 5 / 9) ... launch site temp in deg C
-  .setLaunchSiteWindSpeed(sys.configParams.windSpeed * uc.mph_to_mps) ... reference (base) wind velocity
+  .setLaunchSiteTemp((sys.configParams.launchSiteTemp - 32) * 5 / 9) ...         % temperature in °C
+  .setLaunchSiteWindSpeed(sys.configParams.windSpeed * uc.mph_to_mps) ...         % baes wind speed in m/s
+  .setLaunchSiteWindModelLowSpeed(sys.configParams.windModelLowSpeed * uc.mph_to_mps) ...         % low speed wind model parameter
+  .setLaunchSiteWindModelHighSpeed(sys.configParams.windModelHighSpeed * uc.mph_to_mps) ...       % high speed wind model parameter
+  .setLaunchSiteWindModelTurbulence(sys.configParams.windModelTurbulence) ...     % turbulence parameter
+  .setLaunchSiteWindModelFreq(sys.configParams.windModelFreq) ...                 % wind model frequency parameter
   ;
 
 % Launch Rail
