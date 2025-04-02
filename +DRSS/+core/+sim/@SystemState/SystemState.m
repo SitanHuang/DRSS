@@ -80,7 +80,11 @@ classdef SystemState < handle
       gamma = 1.4; % spec. heat ratio for air
       g0 = 9.80665; % gravitational acceleration at mean sea level [m/s^2]
 
-      this.windSpeed = DRSS.legacy.wind_calc(sys.launchSiteWindSpeed, eps, this.y, sys.launchSiteWindModelPowerParameter);  % 7 = power law denominator for wind
+      this.windSpeed = DRSS.legacy.wind_calc( sys, ...
+        sys.launchSiteWindSpeed, eps, this.y, ...
+        sys.launchSiteWindModelPowerParameter, ... 7 = power law denominator for wind
+        this.t, sys.launchSiteWindModelLowSpeed, sys.launchSiteWindModelHighSpeed, ...
+        sys.launchSiteWindModelTurbulence, sys.launchSiteWindModelFreq);
 
       [this.airDensity, this.airTemp, this.airPressure, this.airDynViscosity] = ...
         DRSS.legacy.atmosphere(this.y, T0, p0, R, B, g0);
@@ -135,6 +139,14 @@ classdef SystemState < handle
       end
     end
 
+    function [avg, minn, maxx, std] = timeAveragedParam(this, paramName)
+      dat = this.(paramName);
+      avg = sum(dat .* this.t) / sum(this.t);
+      minn = min(dat);
+      maxx = max(dat);
+      std = sqrt(sum(this.t .* (dat - avg).^2) / sum(this.t));
+    end
+
     function copy = makeShallowCopy(this)
       copy = DRSS.core.sim.SystemState();
       copy.x = this.x;
@@ -152,6 +164,11 @@ classdef SystemState < handle
       copy.equivForceX = this.equivForceX;
       copy.equivForceY = this.equivForceY;
       copy.t = this.t;
+      copy.windSpeed = this.windSpeed;
+      copy.airDensity = this.airDensity;
+      copy.airTemp = this.airTemp;
+      copy.airPressure = this.airPressure;
+      copy.airDynViscosity = this.airDynViscosity;
       copy.prevTime = this.prevTime;
       copy.forceConstantTheta = this.forceConstantTheta;
       copy.terminate = this.terminate;

@@ -1,33 +1,35 @@
-function w = wind_calc(wr,zr,z,xi)
-% Wind
 
-% ----------------------------------------------------------------------------
-% Calculates the wind velocity at a specified altitude above the launch site.
-% INPUT(S)= wr - reference (base) wind velocity [m/s]
-%           zr - reference (base) altitude [m]
-%           z - altitude above launch site [m]
-%           xi - denominator of exponent in power law_
-% OUTPUT(S)= w - wind speed [m/s]
+% Author: Sitan Huang
+% Wind turbulence added 4/1/2025
 
-    % calculates sustained wind speed
-%     if z >=1219.2
-%         w = - 11.83*cosd(360-303);
-%     elseif z<1219.2 && z>=914.4
-%         w = - (8.23 + 0.011811*(z - 914.4)) *cosd(360-297);
-%     elseif z<914.4 && z>=609.6
-%         w = - (6.69 + 0.0050525*(z - 609.6)) *cosd(360-292) ;
-%     elseif z<609.6 && z>=304.8
-%         w = - (5.66 + 0.00338*(z - 304.8)) *cosd(360-289);
-%     elseif z<304.8
-%         w = - 4.115*cosd(360-287);
-%     end
+function w = wind_calc(sys, wr, zr, z, xi, t, low_wind, high_wind, turbulence, freq)
+    % Set optional arguments if not provided:
+    if nargin < 5, t = 0; end
+    if nargin < 6, low_wind = wr; end
+    if nargin < 7, high_wind = 1.2 * wr; end
+    if nargin < 8, turbulence = 0; end
+    if nargin < 9, freq = 2; end
 
-
+    % For negative heights, simply return the reference wind speed.
     if z < 0
         w = wr;
         return;
     end
-    w = wr*((z+zr)/zr)^(1/xi);
-    % pause
 
+    % Base wind speed following boundary layer profile.
+    w_base = wr * ((z + zr) / zr)^(1 / xi);
+
+    % If any turbulence-related parameter is zero or NaN, just use the base value.
+    if isnan(low_wind) || isnan(high_wind) || isnan(turbulence) || isnan(freq) || ...
+       freq == 0 || turbulence == 0
+        w = w_base;
+        return;
+    end
+
+    % --- Turbulence generation using filtered, asymmetrical white noise ---
+    if isempty(sys.windModelFunc)
+      sys.windModelFunc = DRSS.util.genAsymmetricalTurbulence(w_base, low_wind, high_wind, freq, max(sys.timeSpan), 1 / freq / 10);
+    end
+
+    w = sys.windModelFunc(t);
 end

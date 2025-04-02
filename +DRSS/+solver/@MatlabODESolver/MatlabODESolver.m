@@ -120,6 +120,8 @@ classdef MatlabODESolver < DRSS.solver.Solver
 
       this.sys.recalcMassGroupProperties();
 
+      this.sys.timeSpan = this.timeSpan;
+
       this.ss = this.sys.systemState;
       this.ss.I = this.sys.momentOfInertia();
       this.ss.m = this.sys.m;
@@ -222,9 +224,11 @@ classdef MatlabODESolver < DRSS.solver.Solver
 
       propertyNames = fieldnames(resultantParameters);
 
+      tLen = length(resultantParameters.t);
+
       for i = 1:length(propertyNames)
         propName = propertyNames{i};
-        if isnumeric(resultantParameters.(propName)) && length(resultantParameters.(propName)) == length(resultantParameters.t)
+        if isnumeric(resultantParameters.(propName)) && length(resultantParameters.(propName)) == tLen
           resultantParameters.(propName) = resultantParameters.(propName)(keepIndices);
         end
       end

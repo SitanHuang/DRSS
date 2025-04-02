@@ -121,6 +121,11 @@ function dsdt = integrationStep(this, t, states, system, resultantParameters)
     resultantParameters.cgX(end + 1) = system.cgX;
     resultantParameters.equivForceX(end + 1) = systemState.xdd * systemState.m;
     resultantParameters.equivForceY(end + 1) = systemState.ydd * systemState.m;
+    resultantParameters.windSpeed(end + 1) = systemState.windSpeed;
+    resultantParameters.airDensity(end + 1) = systemState.airDensity;
+    resultantParameters.airTemp(end + 1) = systemState.airTemp;
+    resultantParameters.airPressure(end + 1) = systemState.airPressure;
+    resultantParameters.airDynViscosity(end + 1) = systemState.airDynViscosity;
 
     fn = fieldnames(systemState.params);
     for k = 1:numel(fn)

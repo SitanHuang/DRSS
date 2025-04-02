@@ -27,8 +27,21 @@ classdef System < DRSS.core.obj.MassGroup
     launchSiteWindSpeed = 0;
     launchSiteWindModelPowerParameter = 7;
 
+    % for the turbulent model below, using nan or zero on any one of the four
+    % parameters disables the model
+    launchSiteWindModelLowSpeed = nan;
+    launchSiteWindModelHighSpeed = nan;
+    launchSiteWindModelTurbulence = 0.05;
+    launchSiteWindModelFreq = 0.2;
+
     % associated parameters freely available to users
     configParams = struct();
+  end
+
+  properties (Transient)
+    timeSpan = []; % Internal; initialized by MatlabODESolver.m
+
+    windModelFunc = []; % Internal; initialized by wind_calc.m
   end
 
   methods
@@ -52,6 +65,18 @@ classdef System < DRSS.core.obj.MassGroup
     end
     function this=setLaunchSiteWindModelPowerParameter(this, val)
       this.launchSiteWindModelPowerParameter = val;
+    end
+    function this=setLaunchSiteWindModelLowSpeed(this, val)
+      this.launchSiteWindModelLowSpeed = val;
+    end
+    function this=setLaunchSiteWindModelHighSpeed(this, val)
+      this.launchSiteWindModelHighSpeed = val;
+    end
+    function this=setLaunchSiteWindModelTurbulence(this, val)
+      this.launchSiteWindModelTurbulence = val;
+    end
+    function this=setLaunchSiteWindModelFreq(this, val)
+      this.launchSiteWindModelFreq = val;
     end
 
     function this=setSystemState(this, val)
