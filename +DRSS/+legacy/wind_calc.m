@@ -28,7 +28,7 @@ function w = wind_calc(sys, wr, zr, z, xi, t, low_wind, high_wind, turbulence, f
 
     % --- Turbulence generation using filtered, asymmetrical white noise ---
     if isempty(sys.windModelFunc)
-      sys.windModelFunc = DRSS.util.genAsymmetricalTurbulence(w_base, low_wind, high_wind, freq, max(sys.timeSpan), 1 / freq / 10);
+      sys.windModelFunc = DRSS.util.genAsymmetricalTurbulence(w_base, low_wind, high_wind, freq, max(sys.timeSpan), turbulence, 1 / freq / 10);
     end
 
     w = sys.windModelFunc(t);
