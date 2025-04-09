@@ -74,7 +74,7 @@ fprintf("Payload final speed: z=%.2f fps, x=%.2f fps\n", resultantStates.yd(end)
 apogeeState = mainSys.configParams.apogeeListener.systemStateAtTrigger;
 fprintf("Payload drift from apogee: %.2f ft\n", (resultantStates.x(end) - apogeeState.x) * uc.m_to_ft);
 % fprintf("Payload drift from pad: %.2f ft\n", resultantStates.x(end) * uc.m_to_ft);
-fprintf("Payload drift (nominal): %.2f ft\n", (descentTimeSinceApogee * mainSys.launchSiteWindSpeed) * uc.m_to_ft);
+fprintf("Payload drift (nominal): %.2f ft\n", descentTimeSinceApogee * mainSys.configParams.driftCalcWindSpeed * uc.mph_to_fps);
 fprintf("Payload max G: %.2f\n", max(forceZ) / 9.8);
 % fprintf("Payload descent time: %.2f s\n", resultantStates.t(end) - resultantStates.t(1));
 % fprintf("Payload descent time (+launch): %.2f s\n", resultantStates.t(end) - resultantStates.t(1) + mainSys.configParams.jettisonListener.t_trigger);

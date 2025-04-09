@@ -24,6 +24,8 @@ classdef System < DRSS.core.obj.MassGroup
     % launch site pressure [Pa]
     launchSitePressure = 101592;
     % launch site reference wind speed [m/s]
+    %   This can be a scalr or [[z, wr_z]; ...] (m, mps pairs) for
+    %   aerological data inputs.
     launchSiteWindSpeed = 0;
     launchSiteWindModelPowerParameter = 7;
 

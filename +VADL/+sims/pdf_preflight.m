@@ -2,18 +2,27 @@ clear; clc; close all;
 uc = DRSS.util.unitConv;
 
 %% Set up
+
+% Lebanon, TN:
 mainSys = VADL.config.getMainSys(struct( ...
   'disableJettison', false, ...
   'noMotor', false, ...
   'motorLossFactor', 0.965, ...
   'noBallast', true, ...
   'launchAngle', 5, ...
-  'launchSiteElevation', 620, ...
-  'launchSiteTemp', 82, ...
+  'launchSiteElevation', 600, ...
+  'launchSiteTemp', 55, ...
   'motorOverride', 'K1100', ...
-  'launchRailEffectiveTravel', 13, ... % ft
-  'windSpeed', 17 ...
+  'launchRailEffectiveTravel', 15, ... % ft
+  'windSpeed', [[0, 10]; [1100, 8]], ...
+  'driftCalcWindSpeed', 10, ...
+  'windModelLowSpeed', 5, ...
+  'windModelHighSpeed', 12, ...
+  'windModelTurbulence', 0.075, ...
+  'windModelFreq', 2 ...
 ));
+
+% North Gallatin, TN:
 
 fprintf('Vehicle mass:  %.2f lb\n', mainSys.m / uc.lbm_to_kg);
 if ~(isfield(mainSys.configParams, 'noMotor') && mainSys.configParams.noMotor)
@@ -46,11 +55,11 @@ fprintf("CAr: %.2f - %.2f\n", max(resultantParameters.params.CAr), min(resultant
 fprintf("CP: %.2f - %.2f, %.2f\n", mainSys.configParams.rocketDynamics.cp_calc_min .* uc.m_to_in, mainSys.configParams.rocketDynamics.cp_calc_max .* uc.m_to_in, mainSys.configParams.rocketDynamics.cp_calc_0 .* uc.m_to_in);
 fprintf("Apogee: %.0f ft\n", max(resultantStates.y) .* uc.m_to_ft);
 
-LREind = find(resultantStates.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
+% LREind = find(resultantStates.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
 
 fprintf("LRE: %.1f fps\n", mainSys.configParams.launchRail.v_launchRailExit .* uc.mps_to_fps);
 
-% LREind = find(resultantParameters.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
+LREind = find(resultantParameters.t > mainSys.configParams.launchRail.t_launchRailButtonCleared, 1, 'first');
 
 fprintf("Avg. Thrust-to-Weight: %.1f\n", mean(resultantParameters.params.ThrustToWeight(~isnan(resultantParameters.params.ThrustToWeight))));
 fprintf("Thrust-to-Weight at LRE: %.1f\n", resultantParameters.params.ThrustToWeight(LREind));
@@ -95,7 +104,7 @@ fprintf("Drift from pad: %.0f ft\n", resultantStates.x(end) .* uc.m_to_ft);
 apogeeState = mainSys.configParams.apogeeListener.systemStateAtTrigger;
 
 fprintf("Drift from apogee: %.0f ft\n", (apogeeState.x - resultantStates.x(end)) .* uc.m_to_ft)
-fprintf("Drift (nominal): %.0f ft\n", (descentTime .* mainSys.launchSiteWindSpeed) .* uc.m_to_ft)
+fprintf("Drift (nominal): %.0f ft\n", descentTime * mainSys.configParams.driftCalcWindSpeed * uc.mph_to_fps)
 % return;
 %%
 [payloadSys, payloadStates, ~] = VADL.sims.payload(mainSys, resultantStates);
@@ -130,6 +139,18 @@ plot(resultantParameters.t, resultantParameters.m .* uc.kg_to_lbm);
 % xline(mainSys.configParams.main.t_deploy);
 % xline(mainSys.configParams.main.t_complete);
 % xline(mainSys.configParams.jettisonEvent.t_lastEnable);
+
+%%
+fig3 = figure;
+plot(resultantParameters.t, resultantParameters.windSpeed ./ uc.mph_to_mps, 'b-', 'LineWidth', 1, 'DisplayName', 'Simulated Winds')
+title("Simulated Wind")
+ylabel("Wind Speed [mph]")
+xlabel("Time [s]")
+ylim([5 15])
+yyaxis right;
+plot(resultantStates.t, resultantStates.y .* uc.m_to_ft, 'k-', 'LineWidth', 2, 'DisplayName', 'Altitude')
+grid on;
+legend;
 
 %% Accel vs time
 fig = figure;
@@ -234,10 +255,12 @@ saveas(fig, "340_thrust", "png");
 
 %% Thrust to weight
 fig = figure;
-plot(resultantParameters.t, resultantParameters.params.ThrustToWeight, 'Color', '#D8AB4C', 'LineWidth', 2);
+plot(resultantParameters.t, resultantParameters.params.ThrustToWeight, 'Color', '#D8AB4C', 'LineWidth', 2, 'DisplayName', 'Thrust-to-Weight');
+xline(mainSys.configParams.launchRail.t_launchRailButtonCleared, 'k--', 'DisplayName', 'Rail Cleared')
 title("Effective Thrust-to-Weight w/ Launch Rail Friction Modeling");
 ylabel("Thrust-to-Weight Ratio [1]")
 xlabel("Time [s]");
+legend("Location", "best")
 grid on;
 
 % saveas(fig, "340_thrustratio", "png");

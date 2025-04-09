@@ -31,10 +31,25 @@ if ~isfield(sys.configParams, 'windModelFreq')
   sys.configParams.windModelFreq = 0.2;
 end
 
+% Aerological model
+if isscalar(sys.configParams.windSpeed)
+  ws_converted = sys.configParams.windSpeed * uc.mph_to_mps;
+  sys.configParams.driftCalcWindSpeed = sys.configParams.windSpeed;
+elseif ismatrix(sys.configParams.windSpeed) && size(sys.configParams.windSpeed, 2) == 2
+  % Convert altitudes (ft -> m) and wind speeds (mph -> m/s)
+  ws_converted = [sys.configParams.windSpeed(:,1) * uc.ft_to_m, ...
+                  sys.configParams.windSpeed(:,2) * uc.mph_to_mps];
+  if ~isfield(sys.configParams, 'driftCalcWindSpeed')
+    error('Using aerological data in configParams.windSpeed requires a separate configParams.driftCalcWindSpeed input in mph.');
+  end
+else
+  error('windSpeed config param must be either a scalar or an Nx2 matrix');
+end
+
 sys ...
   .setLaunchSiteElevation(sys.configParams.launchSiteElevation * uc.ft_to_m) ... lebanon, TN - elevation above mean sea level
   .setLaunchSiteTemp((sys.configParams.launchSiteTemp - 32) * 5 / 9) ...         % temperature in °C
-  .setLaunchSiteWindSpeed(sys.configParams.windSpeed * uc.mph_to_mps) ...         % baes wind speed in m/s
+  .setLaunchSiteWindSpeed(ws_converted) ...         % baes wind speed in m/s or [[m, mps]; ...]
   .setLaunchSiteWindModelLowSpeed(sys.configParams.windModelLowSpeed * uc.mph_to_mps) ...         % low speed wind model parameter
   .setLaunchSiteWindModelHighSpeed(sys.configParams.windModelHighSpeed * uc.mph_to_mps) ...       % high speed wind model parameter
   .setLaunchSiteWindModelTurbulence(sys.configParams.windModelTurbulence) ...     % turbulence parameter
