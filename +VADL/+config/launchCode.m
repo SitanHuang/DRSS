@@ -16,6 +16,9 @@ end
 if ~isfield(sys.configParams, 'launchSiteTemp')
   sys.configParams.launchSiteTemp = 90;
 end
+if ~isfield(sys.configParams, 'launchSitePressurePa')
+  sys.configParams.launchSitePressurePa = 101592;
+end
 
 % Turbulent model
 if ~isfield(sys.configParams, 'windModelLowSpeed')
@@ -49,6 +52,7 @@ end
 sys ...
   .setLaunchSiteElevation(sys.configParams.launchSiteElevation * uc.ft_to_m) ... lebanon, TN - elevation above mean sea level
   .setLaunchSiteTemp((sys.configParams.launchSiteTemp - 32) * 5 / 9) ...         % temperature in °C
+  .setLaunchSitePressure(sys.configParams.launchSitePressurePa) ... % Pa - average throughout flight
   .setLaunchSiteWindSpeed(ws_converted) ...         % baes wind speed in m/s or [[m, mps]; ...]
   .setLaunchSiteWindModelLowSpeed(sys.configParams.windModelLowSpeed * uc.mph_to_mps) ...         % low speed wind model parameter
   .setLaunchSiteWindModelHighSpeed(sys.configParams.windModelHighSpeed * uc.mph_to_mps) ...       % high speed wind model parameter
