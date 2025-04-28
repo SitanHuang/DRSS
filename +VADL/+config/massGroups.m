@@ -18,11 +18,11 @@ sys.configParams.jettisonedPayloadBayMass = DRSS.core.obj.Mass("Jettisoned Paylo
     ... .setM(6.97 * uc.lbm_to_kg) ... planned shave
     ... .setM(6.62 * uc.lbm_to_kg) ... planned shave 2
     ... .setM(6.69 * uc.lbm_to_kg) ... post shave 2/18
-    .setM(5.95 * uc.lbm_to_kg) ... new airframe, FRR MPP 3/11
+    .setM(6.2 * uc.lbm_to_kg) ... new airframe, FRR MPP 3/11
     .setLen(10.75 * uc.in_to_m) ...
     .setCGX(10.75 * 0.3 * uc.in_to_m);
 
-ballastMass = 2.3;
+ballastMass = 1.15;
 
 if isfield(sys.configParams, 'noBallast') && sys.configParams.noBallast
   ballastMass = 0;

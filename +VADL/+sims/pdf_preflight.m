@@ -192,7 +192,7 @@ plot(resultantStates.t, resultantStates.y .* uc.m_to_ft, 'Color', '#D8AB4C', 'Li
 title("Altitude");
 ylabel("Altitude [ft]")
 xlabel("Time [s]");
-xlim([resultantStates.t(1) resultantStates.t(end)])
+xlim([resultantStates.t(1) payloadStates.t(end)])
 ylim([0 4500])
 grid on;
 hold on;

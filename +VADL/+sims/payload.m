@@ -79,7 +79,7 @@ fprintf("Payload max G: %.2f\n", max(forceZ) / 9.8);
 % fprintf("Payload descent time: %.2f s\n", resultantStates.t(end) - resultantStates.t(1));
 % fprintf("Payload descent time (+launch): %.2f s\n", resultantStates.t(end) - resultantStates.t(1) + mainSys.configParams.jettisonListener.t_trigger);
 fprintf("Payload descent time (+apogee): %.2f s\n", descentTimeSinceApogee);
-fprintf("Payload KE: %.3f lb-ft\n", resultantStates.yd(end)^2 * 0.5 * sys.m * uc.J_to_ftlbf);
+fprintf("Payload KE: %.3f lb-ft (%.1f lbm)\n", resultantStates.yd(end)^2 * 0.5 * sys.m * uc.J_to_ftlbf, ceil(sys.m / uc.lbm_to_kg * 10) / 10);
 
 return;
 %% Plot x-y Trajectory
