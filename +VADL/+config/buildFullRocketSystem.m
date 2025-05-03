@@ -31,6 +31,10 @@ if ~isfield(sys.configParams, 'disableDrogue') || ~sys.configParams.disableDrogu
   sys = sys.subjectTo(sys.configParams.drogue);
 end
 
+if isfield(sys.configParams, 'dragPlate')
+  sys = sys.subjectTo(sys.configParams.dragPlate);
+end
+
 % Calculate geometry based on system length with massing now available:
 sys.configParams.rocketDynamics.recalcTransientParameters(sys);
 

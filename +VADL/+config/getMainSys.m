@@ -13,6 +13,7 @@ VADL.config.massGroups(sys);
 
 VADL.config.parachutes(sys);
 VADL.config.descentDrag(sys);
+VADL.config.dragPlate(sys);
 VADL.config.launchCode(sys);
 VADL.config.eventsSetup(sys);
 VADL.config.buildFullRocketSystem(sys);

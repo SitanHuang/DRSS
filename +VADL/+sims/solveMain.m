@@ -1,18 +1,17 @@
-function [resultantStates, resultantParameters, sys] = solveMain()
+function [resultantStates, resultantParameters, sys] = solveMain(configParams)
 
-uc = DRSS.util.unitConv;
+if nargin < 1
+  configParams = struct();
+end
 
 %% Load up VADL configurations
-sys = VADL.config.getMainSys();
-
-% sys.overrideCGX(51.292 * uc.in_to_m);
-% ssm = (sys.configParams.rocketDynamics.aerodynamicProfile.CP - sys.cgX) / sys.configParams.rocketDynamics.aerodynamicProfile.D
-
+sys = VADL.config.getMainSys(configParams);
 
 %% Solve
 solver = DRSS.solver.MatlabODESolver(sys) ...
   .setCaptureResultantParameters(true) ...
-  .configureODE('RelTol', 1e-9, 'AbsTol', 1e-10) ...
+  .setPrintPerformanceSummary(true) .....
+  .configureODE('RelTol', 1e-12, 'MaxStep', 0.05) ...
   .overrideODEFunc(@ode113);
 
 [resultantStates, resultantParameters] = solver.solve();
