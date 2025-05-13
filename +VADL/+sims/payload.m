@@ -1,4 +1,8 @@
-function [sys, resultantStates, resultantParameters] = payload(mainSys, resultantStates)
+function [sys, resultantStates, resultantParameters] = payload(mainSys, resultantStates, disablePrint)
+
+if nargin < 3
+  disablePrint = false;
+end
 
 %% Grab conditions at jettison
 
@@ -68,6 +72,9 @@ forceZ = gradient(resultantStates.yd(1:(end-5)), resultantStates.t(1:(end-5)));
 
 descentTimeSinceApogee = resultantStates.t(end) - resultantStates.t(1) + mainSys.configParams.jettisonListener.t_trigger - mainSys.configParams.apogeeListener.t_trigger;
 
+if disablePrint
+  return;
+end
 % fprintf("Payload max speed: z=%.2f fps\n", max(-resultantStates.yd) * uc.mps_to_fps);
 fprintf("Payload final speed: z=%.2f fps, x=%.2f fps\n", resultantStates.yd(end) * uc.mps_to_fps, resultantStates.xd(end) * uc.mps_to_fps);
 % fprintf("Payload drift: %.2f ft\n", (resultantStates.x(end) - resultantStates.x(1)) * uc.m_to_ft);
