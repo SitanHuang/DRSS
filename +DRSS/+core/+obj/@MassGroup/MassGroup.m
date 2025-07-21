@@ -56,8 +56,6 @@ classdef MassGroup < DRSS.core.obj.Mass
     % This method sums up all the child masses to the properties of
     % the MassGroup, which now acts as a single Mass obj.
     %
-    % CAUTION: This method overrides the mass set by overrideMass
-    %
     % This method is called automatically on appendChild()
     mg = recalcMassGroupProperties(mg);
   end
